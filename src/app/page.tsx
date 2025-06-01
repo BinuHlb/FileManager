@@ -96,7 +96,7 @@ export default function DashboardPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-headline text-primary">Welcome to FileFlow Dashboard!</CardTitle>
+          <CardTitle className="text-3xl font-headline">Welcome to FileFlow Dashboard!</CardTitle>
           <CardDescription className="text-lg">
             Your central hub for managing files, users, and system settings.
           </CardDescription>

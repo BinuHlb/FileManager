@@ -62,7 +62,7 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
       <Icon className={cn(isSubmenuItem ? "mr-2 h-4 w-4" : "h-5 w-5")} />
       <span className={cn(
         isSubmenuItem ? "text-sm" : "",
-        isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
+        (!isSubmenuItem && !isMobile && sidebarState === "collapsed") ? "hidden" : ""
       )}>{item.label}</span>
       {!isSubmenuItem && item.submenu && sidebarState === "expanded" && !isMobile && (
         <ChevronRight className="ml-auto h-4 w-4" />
@@ -76,13 +76,13 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const handleMouseEnter = () => {
-    if ((sidebarState === "expanded" || sidebarState === "collapsed") && !isMobile && item.submenu) {
+    if (!isMobile && item.submenu) { // Open popover on hover for desktop (collapsed or expanded)
       setIsPopoverOpen(true);
     }
   };
 
   const handleMouseLeave = () => {
-    if ((sidebarState === "expanded" || sidebarState === "collapsed") && !isMobile && item.submenu) {
+    if (!isMobile && item.submenu) {
       setIsPopoverOpen(false);
     }
   };
@@ -117,19 +117,15 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
             >
-              {(sidebarState === "collapsed" && !isMobile) || isMobile ? (
-                <Link 
+              {/* For collapsed desktop or mobile, Link handles click to toggle popover/navigate */}
+              {/* For expanded desktop, Link handles direct navigation if parent is clicked */}
+               <Link 
                   href={item.href} 
                   className="flex items-center w-full h-full" 
                   onClick={handleItemClick} 
                 >
                    <NavMenuItemContent item={item} />
                 </Link>
-              ) : (
-                 <Link href={item.href} className="flex items-center w-full h-full" onClick={handleItemClick}>
-                    <NavMenuItemContent item={item} />
-                 </Link>
-              )}
             </SidebarMenuButton>
           </div>
         </PopoverTrigger>
@@ -181,7 +177,7 @@ export function MainSidebar() {
           <FileFlowLogo className="h-8 w-8" />
           <span className={cn(
             "font-semibold text-xl font-headline",
-            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
+            (!isMobile && sidebarState === "collapsed") ? "hidden" : ""
           )}>FileFlow</span>
         </Link>
       </SidebarHeader>
@@ -205,14 +201,14 @@ export function MainSidebar() {
         </SidebarMenu>
         <div className={cn(
             "flex items-center gap-3 p-2 mt-2 rounded-lg bg-sidebar-accent/50",
-            isMobile ? "" : (sidebarState === 'collapsed' ? 'justify-center' : '')
+            (!isMobile && sidebarState === 'collapsed') ? 'justify-center' : ''
         )}>
           <Avatar className="h-10 w-10 border-2 border-primary">
             <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="user avatar"/>
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           <div className={cn(
-            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
+            (!isMobile && sidebarState === "collapsed") ? "hidden" : ""
           )}>
             <p className="font-semibold text-sm text-sidebar-accent-foreground">John Doe</p>
             <p className="text-xs text-muted-foreground">john.doe@example.com</p>
@@ -222,7 +218,7 @@ export function MainSidebar() {
           variant="ghost" 
           className={cn(
             "w-full justify-start mt-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            isMobile ? "justify-start" : (sidebarState === 'collapsed' ? 'justify-center' : 'justify-start')
+            (!isMobile && sidebarState === 'collapsed') ? 'justify-center' : 'justify-start'
           )}
           onClick={() => {
             logout();
@@ -231,10 +227,10 @@ export function MainSidebar() {
         >
           <LogOut className={cn(
               "h-5 w-5", 
-              isMobile ? "mr-2" : (sidebarState === 'expanded' ? "mr-2" : "")
+              (isMobile || sidebarState === 'expanded') ? "mr-2" : ""
           )} />
           <span className={cn(
-            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
+            (!isMobile && sidebarState === "collapsed") ? "hidden" : ""
           )}>Logout</span>
         </Button>
       </SidebarFooter>

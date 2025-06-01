@@ -1,12 +1,32 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Users, FolderKanban, Settings } from 'lucide-react';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const initialStatsData = [
+  { label: "Total Files", value: "1.2K" },
+  { label: "Active Users", value: "78" },
+  { label: "Pending Approvals", value: "12" },
+  { label: "Storage Used", value: "64 GB" },
+];
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState(initialStatsData.map(s => ({ ...s, value: '' })));
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsStatsLoading(true);
+    const timer = setTimeout(() => {
+      setStats(initialStatsData);
+      setIsStatsLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
        <Card>
@@ -15,10 +35,14 @@ export default function DashboardPage() {
             <CardDescription>A snapshot of your current activity.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatItem label="Total Files" value="1.2K" />
-            <StatItem label="Active Users" value="78" />
-            <StatItem label="Pending Approvals" value="12" />
-            <StatItem label="Storage Used" value="64 GB" />
+            {stats.map((stat, index) => (
+              <StatItem 
+                key={index} 
+                label={stat.label} 
+                value={stat.value} 
+                isLoading={isStatsLoading} 
+              />
+            ))}
         </CardContent>
       </Card>
       <Card className="shadow-lg">
@@ -38,7 +62,7 @@ export default function DashboardPage() {
               title="File Management"
               description="Organize, upload, and share your documents and media."
               link="/file-manager"
-              imageSrc="/a1.svg" 
+              imageSrc="/a1.jpg" 
               imageAlt="File management illustration"
               aiHint="file organization"
             />
@@ -108,14 +132,23 @@ function InfoCard({ icon, title, description, link, imageSrc, imageAlt, aiHint }
 interface StatItemProps {
     label: string;
     value: string;
+    isLoading?: boolean;
 }
 
-function StatItem({ label, value }: StatItemProps) {
+function StatItem({ label, value, isLoading }: StatItemProps) {
     return (
-        <div className="p-4 bg-secondary/50 rounded-lg text-center">
-            <p className="text-2xl font-bold text-primary">{value}</p>
-            <p className="text-sm text-muted-foreground">{label}</p>
+        <div className="p-4 bg-secondary/50 rounded-lg text-center h-24 flex flex-col justify-center"> {/* Added fixed height and centering */}
+            {isLoading ? (
+                <>
+                    <Skeleton className="h-7 w-1/2 mx-auto mb-2" /> {/* Adjusted height for value */}
+                    <Skeleton className="h-4 w-3/4 mx-auto" />      {/* For label */}
+                </>
+            ) : (
+                <>
+                    <p className="text-2xl font-bold text-primary">{value}</p>
+                    <p className="text-sm text-muted-foreground">{label}</p>
+                </>
+            )}
         </div>
     );
 }
-

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Users, FolderKanban, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const initialStatsData = [
   { label: "Total Files", value: "1.2K" },
@@ -34,13 +35,14 @@ export default function DashboardPage() {
             <CardTitle className="text-xl font-headline">Quick Stats</CardTitle>
             <CardDescription>A snapshot of your current activity.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((stat, index) => (
               <StatItem 
                 key={index} 
                 label={stat.label} 
                 value={stat.value} 
-                isLoading={isStatsLoading} 
+                isLoading={isStatsLoading}
+                colorIndex={index}
               />
             ))}
         </CardContent>
@@ -62,7 +64,7 @@ export default function DashboardPage() {
               title="File Management"
               description="Organize, upload, and share your documents and media."
               link="/file-manager"
-              imageSrc="/a1.jpg" 
+              imageSrc="/a1.jpg"
               imageAlt="File management illustration"
               aiHint="file organization"
             />
@@ -71,7 +73,7 @@ export default function DashboardPage() {
               title="User & Role Management"
               description="Administer users, assign roles, and manage department structures."
               link="/user-management/users"
-              imageSrc="/a2.jpg" 
+              imageSrc="/a2.jpg"
               imageAlt="User management illustration"
               aiHint="team collaboration"
             />
@@ -133,22 +135,36 @@ interface StatItemProps {
     label: string;
     value: string;
     isLoading?: boolean;
+    colorIndex: number;
 }
 
-function StatItem({ label, value, isLoading }: StatItemProps) {
+function StatItem({ label, value, isLoading, colorIndex }: StatItemProps) {
+    const colorPalette = [
+        { bg: 'bg-[hsl(var(--chart-1))]', valueText: 'text-white', labelText: 'text-white/80' },
+        { bg: 'bg-[hsl(var(--chart-2))]', valueText: 'text-white', labelText: 'text-white/80' },
+        { bg: 'bg-[hsl(var(--chart-3))]', valueText: 'text-white', labelText: 'text-white/80' },
+        { bg: 'bg-[hsl(var(--chart-4))]', valueText: 'text-neutral-800 dark:text-white', labelText: 'text-neutral-700 dark:text-white/80' },
+        { bg: 'bg-[hsl(var(--chart-5))]', valueText: 'text-white', labelText: 'text-white/80' }, // Added a 5th option just in case
+    ];
+    const selectedColor = colorPalette[colorIndex % colorPalette.length];
+
     return (
-        <div className="p-4 bg-secondary/50 rounded-lg text-center h-24 flex flex-col justify-center"> {/* Added fixed height and centering */}
+        <div className={cn(
+            "p-4 rounded-lg text-center h-24 flex flex-col justify-center shadow-md transition-colors duration-300",
+            isLoading ? "bg-secondary/30" : selectedColor.bg
+        )}>
             {isLoading ? (
                 <>
-                    <Skeleton className="h-7 w-1/2 mx-auto mb-2" /> {/* Adjusted height for value */}
-                    <Skeleton className="h-4 w-3/4 mx-auto" />      {/* For label */}
+                    <Skeleton className="h-7 w-1/2 mx-auto mb-2 bg-background/50" />
+                    <Skeleton className="h-4 w-3/4 mx-auto bg-background/40" />
                 </>
             ) : (
                 <>
-                    <p className="text-2xl font-bold text-primary">{value}</p>
-                    <p className="text-sm text-muted-foreground">{label}</p>
+                    <p className={cn("text-2xl font-bold", selectedColor.valueText)}>{value}</p>
+                    <p className={cn("text-sm", selectedColor.labelText)}>{label}</p>
                 </>
             )}
         </div>
     );
 }
+

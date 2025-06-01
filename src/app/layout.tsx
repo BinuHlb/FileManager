@@ -49,7 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <title>FileFlow</title> {/* Add a default title here if metadata object is removed */}
+        <title>FileFlow</title>
         <meta name="description" content="File Management Application by Firebase Studio" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

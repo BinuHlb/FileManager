@@ -1,14 +1,14 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_ROLES } from '@/lib/constants';
 import { roleColumns } from '@/components/role-table/columns';
 import { DataTable } from '@/components/shared/data-table';
 import type { RoleItem } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldPlus } from 'lucide-react';
+import { ShieldPlus, ListFilter } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,8 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const roleFormSchema = z.object({
   role: z.string().min(1, { message: "Role name is required." }),
@@ -43,9 +45,10 @@ const roleFormSchema = z.object({
 type RoleFormData = z.infer<typeof roleFormSchema>;
 
 export default function RolesPage() {
-  const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [allRoles, setAllRoles] = useState<RoleItem[]>([]);
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
+  const [activityFilter, setActivityFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const form = useForm<RoleFormData>({
     resolver: zodResolver(roleFormSchema),
@@ -59,7 +62,7 @@ export default function RolesPage() {
   useEffect(() => {
     setIsTableLoading(true);
     const timer = setTimeout(() => {
-      setRoles(MOCK_ROLES);
+      setAllRoles(MOCK_ROLES);
       setIsTableLoading(false);
     }, 1500); // Simulate 1.5 second delay
     return () => clearTimeout(timer);
@@ -69,10 +72,18 @@ export default function RolesPage() {
     console.log("New Role Data:", data);
     // Add to mock list or call API
     // const newRole: RoleItem = { id: `role-${Date.now()}`, srNo: roles.length + 1, ...data };
-    // setRoles(prev => [...prev, newRole]);
+    // setAllRoles(prev => [...prev, newRole]);
     form.reset();
     setIsAddRoleModalOpen(false);
   }
+
+  const displayRoles = useMemo(() => {
+    if (activityFilter === 'all') {
+      return allRoles;
+    }
+    const isActiveFilter = activityFilter === 'active';
+    return allRoles.filter(role => role.isActive === isActiveFilter);
+  }, [allRoles, activityFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,13 +165,32 @@ export default function RolesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* DataTable will have its own filter input if filterColumnId is provided */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+            <div>
+              <Label htmlFor="activity-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by activity</Label>
+              <Select value={activityFilter} onValueChange={(value) => setActivityFilter(value as 'all' | 'active' | 'inactive')}>
+                <SelectTrigger id="activity-filter" className="h-10">
+                  <SelectValue placeholder="Select activity status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center md:justify-self-end">
+              <Button variant="outline" size="sm" onClick={() => setActivityFilter('all')}>
+                <ListFilter className="mr-2 h-4 w-4" /> Clear Activity Filter
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
       <DataTable 
         columns={roleColumns} 
-        data={roles} 
+        data={displayRoles} 
         filterColumnId="role"
         filterPlaceholder="Search by role name..."
         isLoading={isTableLoading}

@@ -115,7 +115,7 @@ export const approvalListColumns: ColumnDef<ApprovalListItem>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log("View details", item.id)}>
+            <DropdownMenuItem onClick={() => console.log("View Details for ID:", item.id, item)}>
               <Eye className="mr-2 h-4 w-4" /> View Details
             </DropdownMenuItem>
             {isPending && (

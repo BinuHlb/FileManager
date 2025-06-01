@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_DOCUMENT_LIST_ITEMS } from '@/lib/constants';
 import { documentListColumns } from '@/components/document-list-table/columns';
 import { DataTable } from '@/components/shared/data-table';
@@ -9,7 +9,7 @@ import type { DocumentListItem } from '@/types';
 import { DocumentStatus } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus } from 'lucide-react';
+import { FilePlus, ListFilter } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Label } from '@/components/ui/label';
 
 const documentFormSchema = z.object({
   name: z.string().min(1, { message: "Document name is required." }),
@@ -49,9 +50,10 @@ const documentFormSchema = z.object({
 type DocumentFormData = z.infer<typeof documentFormSchema>;
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<DocumentListItem[]>([]);
+  const [allDocuments, setAllDocuments] = useState<DocumentListItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<DocumentStatus | 'all'>('all');
 
   const form = useForm<DocumentFormData>({
     resolver: zodResolver(documentFormSchema),
@@ -65,7 +67,7 @@ export default function DocumentsPage() {
   useEffect(() => {
     setIsTableLoading(true);
     const timer = setTimeout(() => {
-      setDocuments(MOCK_DOCUMENT_LIST_ITEMS);
+      setAllDocuments(MOCK_DOCUMENT_LIST_ITEMS);
       setIsTableLoading(false);
     }, 1500); // Simulate 1.5 second delay
     return () => clearTimeout(timer);
@@ -81,10 +83,17 @@ export default function DocumentsPage() {
     //   createdBy: "current.user@example.com", // Placeholder
     //   lastModified: new Date(),
     // };
-    // setDocuments(prev => [...prev, newDoc]);
+    // setAllDocuments(prev => [...prev, newDoc]);
     form.reset();
     setIsAddModalOpen(false);
   }
+
+  const displayDocuments = useMemo(() => {
+    if (statusFilter === 'all') {
+      return allDocuments;
+    }
+    return allDocuments.filter(doc => doc.status === statusFilter);
+  }, [allDocuments, statusFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -172,13 +181,33 @@ export default function DocumentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* DataTable filter input */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+            <div>
+              <Label htmlFor="status-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by status</Label>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as DocumentStatus | 'all')}>
+                <SelectTrigger id="status-filter" className="h-10">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {Object.values(DocumentStatus).map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center md:justify-self-end">
+              <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
+                <ListFilter className="mr-2 h-4 w-4" /> Clear Status Filter
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
       <DataTable 
         columns={documentListColumns} 
-        data={documents} 
+        data={displayDocuments} 
         filterColumnId="name"
         filterPlaceholder="Search by document name..."
         isLoading={isTableLoading}

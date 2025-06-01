@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_DEPARTMENTS } from '@/lib/constants';
 import { departmentColumns } from '@/components/department-table/columns';
 import { DataTable } from '@/components/shared/data-table';
@@ -9,7 +9,7 @@ import type { DepartmentItem } from '@/types';
 import { DepartmentStatus } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2 } from 'lucide-react';
+import { Building2, ListFilter } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -41,6 +41,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Label } from '@/components/ui/label';
 
 const departmentFormSchema = z.object({
   name: z.string().min(1, { message: "Department name is required." }),
@@ -52,9 +53,10 @@ const departmentFormSchema = z.object({
 type DepartmentFormData = z.infer<typeof departmentFormSchema>;
 
 export default function DepartmentsPage() {
-  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
+  const [allDepartments, setAllDepartments] = useState<DepartmentItem[]>([]);
   const [isAddDeptModalOpen, setIsAddDeptModalOpen] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<DepartmentStatus | 'all'>('all');
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentFormSchema),
@@ -69,7 +71,7 @@ export default function DepartmentsPage() {
   useEffect(() => {
     setIsTableLoading(true);
     const timer = setTimeout(() => {
-      setDepartments(MOCK_DEPARTMENTS);
+      setAllDepartments(MOCK_DEPARTMENTS);
       setIsTableLoading(false);
     }, 1500); // Simulate 1.5 second delay
     return () => clearTimeout(timer);
@@ -79,10 +81,17 @@ export default function DepartmentsPage() {
     console.log("New Department Data:", data);
     // Add to mock list or call API
     // const newDept: DepartmentItem = { id: `dept-${Date.now()}`, srNo: departments.length + 1, ...data };
-    // setDepartments(prev => [...prev, newDept]);
+    // setAllDepartments(prev => [...prev, newDept]);
     form.reset();
     setIsAddDeptModalOpen(false);
   }
+
+  const displayDepartments = useMemo(() => {
+    if (statusFilter === 'all') {
+      return allDepartments;
+    }
+    return allDepartments.filter(dept => dept.status === statusFilter);
+  }, [allDepartments, statusFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -188,13 +197,33 @@ export default function DepartmentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* DataTable will have its own filter input if filterColumnId is provided */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+            <div>
+              <Label htmlFor="status-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by status</Label>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as DepartmentStatus | 'all')}>
+                <SelectTrigger id="status-filter" className="h-10">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {Object.values(DepartmentStatus).map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center md:justify-self-end">
+              <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
+                <ListFilter className="mr-2 h-4 w-4" /> Clear Status Filter
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
       <DataTable 
         columns={departmentColumns} 
-        data={departments} 
+        data={displayDepartments} 
         filterColumnId="name"
         filterPlaceholder="Search by department name..."
         isLoading={isTableLoading}

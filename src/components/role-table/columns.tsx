@@ -3,7 +3,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RoleItem } from "@/types";
-import { ArrowUpDown, MoreHorizontal, Edit3, Trash2 } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Edit3, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -94,6 +94,9 @@ export const roleColumns: ColumnDef<RoleItem>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => console.log("View Details for ID:", role.id, role)}>
+              <Eye className="mr-2 h-4 w-4" /> View Details
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log("Edit role", role.id)}>
               <Edit3 className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>

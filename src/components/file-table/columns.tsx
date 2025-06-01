@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
@@ -16,8 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { getFileIcon } from "@/lib/constants";
-import { format, isValid } from "date-fns";
-import React, { useState, useEffect } from 'react';
+import { format, isValid, parseISO } from "date-fns"; // Ensure parseISO is imported if used, or rely on new Date()
+import React from 'react';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -121,20 +122,13 @@ export const columns: ColumnDef<FileItem>[] = [
     ),
     cell: ({ row }) => {
       const dateValue = row.original.lastModified;
-      const [displayDate, setDisplayDate] = useState<string>("Loading date...");
-
-      useEffect(() => {
-        // Ensure dateValue can be converted to a Date object
-        const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
-        
-        if (isValid(dateObj)) {
-          setDisplayDate(format(dateObj, "PPpp"));
-        } else {
-          setDisplayDate("Invalid Date");
-        }
-      }, [dateValue]);
-
-      return <div>{displayDate}</div>;
+      // Ensure dateValue is a Date object before formatting
+      const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
+      
+      if (isValid(dateObj)) {
+        return <div>{format(dateObj, "PPpp")}</div>;
+      }
+      return <div>Invalid Date</div>;
     },
   },
   {
@@ -156,7 +150,7 @@ export const columns: ColumnDef<FileItem>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log("View", file.name)}>
+            <DropdownMenuItem onClick={() => console.log("View Details for ID:", file.id, file)}>
               <Eye className="mr-2 h-4 w-4" /> View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log("Download", file.name)}>

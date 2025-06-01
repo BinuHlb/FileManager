@@ -115,8 +115,8 @@ export const documentListColumns: ColumnDef<DocumentListItem>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log("View document", document.id)}>
-              <Eye className="mr-2 h-4 w-4" /> View
+            <DropdownMenuItem onClick={() => console.log("View Details for ID:", document.id, document)}>
+              <Eye className="mr-2 h-4 w-4" /> View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log("Edit document", document.id)}>
               <Edit3 className="mr-2 h-4 w-4" /> Edit

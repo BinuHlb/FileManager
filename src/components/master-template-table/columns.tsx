@@ -4,7 +4,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { MasterTemplateItem } from "@/types";
 import { TemplateStatus } from "@/types";
-import { ArrowUpDown, MoreHorizontal, Edit3, Trash2 } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Edit3, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -72,7 +72,7 @@ export const masterTemplateColumns: ColumnDef<MasterTemplateItem>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as TemplateStatus;
-      let badgeVariant: "default" | "secondary" | "outline" = "outline";
+      let badgeVariant: "default" | "secondary" | "outline" | "destructive" = "outline";
       if (status === TemplateStatus.PUBLISHED) badgeVariant = "default";
       if (status === TemplateStatus.DRAFT) badgeVariant = "secondary";
       if (status === TemplateStatus.ARCHIVED) badgeVariant = "destructive";
@@ -109,6 +109,9 @@ export const masterTemplateColumns: ColumnDef<MasterTemplateItem>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => console.log("View Details for ID:", template.id, template)}>
+              <Eye className="mr-2 h-4 w-4" /> View Details
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => console.log("Edit template", template.id)}>
               <Edit3 className="mr-2 h-4 w-4" /> Edit
             </DropdownMenuItem>

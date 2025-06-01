@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MOCK_MASTER_TEMPLATES } from '@/lib/constants';
 import { masterTemplateColumns } from '@/components/master-template-table/columns';
 import { DataTable } from '@/components/shared/data-table';
@@ -9,7 +9,7 @@ import type { MasterTemplateItem } from '@/types';
 import { TemplateStatus } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus2 } from 'lucide-react';
+import { FilePlus2, ListFilter } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Label } from '@/components/ui/label';
 
 const masterTemplateFormSchema = z.object({
   name: z.string().min(1, { message: "Template name is required." }),
@@ -51,9 +52,10 @@ const masterTemplateFormSchema = z.object({
 type MasterTemplateFormData = z.infer<typeof masterTemplateFormSchema>;
 
 export default function MasterTemplatesPage() {
-  const [templates, setTemplates] = useState<MasterTemplateItem[]>([]);
+  const [allTemplates, setAllTemplates] = useState<MasterTemplateItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isTableLoading, setIsTableLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<TemplateStatus | 'all'>('all');
 
   const form = useForm<MasterTemplateFormData>({
     resolver: zodResolver(masterTemplateFormSchema),
@@ -68,7 +70,7 @@ export default function MasterTemplatesPage() {
   useEffect(() => {
     setIsTableLoading(true);
     const timer = setTimeout(() => {
-      setTemplates(MOCK_MASTER_TEMPLATES);
+      setAllTemplates(MOCK_MASTER_TEMPLATES);
       setIsTableLoading(false);
     }, 1500); // Simulate 1.5 second delay
     return () => clearTimeout(timer);
@@ -84,10 +86,17 @@ export default function MasterTemplatesPage() {
     //   description: data.description || "", 
     //   lastModified: new Date() 
     // };
-    // setTemplates(prev => [...prev, newTemplate]);
+    // setAllTemplates(prev => [...prev, newTemplate]);
     form.reset();
     setIsAddModalOpen(false);
   }
+
+  const displayTemplates = useMemo(() => {
+    if (statusFilter === 'all') {
+      return allTemplates;
+    }
+    return allTemplates.filter(template => template.status === statusFilter);
+  }, [allTemplates, statusFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -189,13 +198,33 @@ export default function MasterTemplatesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* DataTable will have its own filter input if filterColumnId is provided */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+            <div>
+              <Label htmlFor="status-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by status</Label>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as TemplateStatus | 'all')}>
+                <SelectTrigger id="status-filter" className="h-10">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {Object.values(TemplateStatus).map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center md:justify-self-end">
+              <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
+                <ListFilter className="mr-2 h-4 w-4" /> Clear Status Filter
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
       <DataTable 
         columns={masterTemplateColumns} 
-        data={templates} 
+        data={displayTemplates} 
         filterColumnId="name"
         filterPlaceholder="Search by template name..."
         isLoading={isTableLoading}

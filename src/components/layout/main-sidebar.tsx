@@ -155,7 +155,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               <SidebarMenuItem key={subItem.href}>
                 <SidebarMenuButton 
                   asChild 
-                  className="w-full justify-start h-8 text-sm bg-transparent text-primary-foreground hover:bg-black/10 focus:bg-black/20 px-2 py-1.5 rounded-sm" 
+                  className="w-full justify-start h-8 text-sm bg-transparent text-primary-foreground hover:bg-accent focus:bg-accent px-2 py-1.5 rounded-sm" 
                   onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}
                 >
                   <Link href={subItem.href} className="flex items-center gap-2">

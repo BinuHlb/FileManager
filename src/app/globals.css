@@ -2,9 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Remove direct font-family for body, it will be handled by Tailwind using CSS var from next/font */
+/*
 body {
   font-family: 'Inter', Arial, Helvetica, sans-serif;
 }
+*/
 
 @layer base {
   :root {

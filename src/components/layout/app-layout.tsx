@@ -2,7 +2,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react'; // Removed useState as it's passed from RootLayout
 import {
   SidebarProvider,
   Sidebar,
@@ -13,36 +13,35 @@ import { MainSidebar } from "./main-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
-import { useAuth } from "@/context/auth-context"; // Import useAuth
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpenState, setSidebarOpenState] = useState(false);
-  const { isAuthenticated, isLoading } = useAuth(); // Get auth state and loading status
+interface AppLayoutProps {
+  children: React.ReactNode;
+  sidebarOpen: boolean;
+  onSidebarOpenChange: (open: boolean) => void;
+}
+
+export function AppLayout({ children, sidebarOpen, onSidebarOpenChange }: AppLayoutProps) {
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect if not authenticated and not loading.
-    // The isLoading check prevents redirecting before auth status is determined.
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // If loading or not authenticated, don't render the main layout yet.
-  // This prevents flashing the layout briefly before redirection.
   if (isLoading || !isAuthenticated) {
+    // Render nothing or a minimal loading indicator while checking auth / redirecting
     return null; 
-    // Or return a loading spinner for a better UX if isLoading is true
-    // if (isLoading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    // return null;
   }
 
   return (
     <SidebarProvider 
-      open={sidebarOpenState} 
-      onOpenChange={setSidebarOpenState}
-      defaultOpen={false} // Keep this for initial collapsed state
+      open={sidebarOpen} 
+      onOpenChange={onSidebarOpenChange}
+      defaultOpen={false} // Maintained for consistency, actual state controlled by `open` prop
     >
       <Sidebar collapsible="icon">
         <MainSidebar />

@@ -28,7 +28,8 @@ import {
   LayoutGrid,
   FileText,
   Files,
-  CheckCircle2
+  CheckCircle2,
+  LayoutDashboard // Added for Dashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/auth-context';
@@ -42,7 +43,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: "/", icon: Folder, label: "File Manager" },
+  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/file-manager", icon: Folder, label: "File Manager" },
   {
     href: "/user-management/users", 
     icon: UsersRound, 
@@ -249,3 +251,4 @@ export function MainSidebar() {
     </>
   );
 }
+

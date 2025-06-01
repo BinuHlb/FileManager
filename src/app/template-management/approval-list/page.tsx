@@ -17,7 +17,7 @@ export default function ApprovalListPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="shadow-lg">
+      <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>

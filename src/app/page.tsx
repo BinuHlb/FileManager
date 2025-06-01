@@ -1,116 +1,119 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { MOCK_FILES } from '@/lib/constants';
-import { columns } from '@/components/file-table/columns';
-import { DataTable } from '@/components/shared/data-table'; // Updated import path
-import type { FileItem } from '@/types';
-import { FileType } from '@/types';
-
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, ListFilter, UploadCloud, FolderPlus } from 'lucide-react';
-import { format, isValid, parseISO } from 'date-fns';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, Users, FolderKanban, Settings } from 'lucide-react';
+import Image from 'next/image';
 
-export default function FileManagementPage() {
-  const [allFiles, setAllFiles] = useState<FileItem[]>([]);
-  const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
-
-  useEffect(() => {
-    setAllFiles(MOCK_FILES.map(file => ({
-      ...file,
-      lastModified: typeof file.lastModified === 'string' ? parseISO(file.lastModified) : file.lastModified
-    })));
-  }, []);
-
-  const filteredFiles = useMemo(() => {
-    return allFiles.filter(file => {
-      // Name filter is now handled by DataTable's internal filter
-      const typeMatch = typeFilter === 'all' || file.type === typeFilter;
-      const dateMatch = !dateFilter || 
-        (isValid(file.lastModified) && format(file.lastModified, 'yyyy-MM-dd') === format(dateFilter, 'yyyy-MM-dd'));
-      return typeMatch && dateMatch;
-    });
-  }, [allFiles, typeFilter, dateFilter]);
-
+export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">File Manager</CardTitle>
-          <CardDescription>Browse, search, and manage your files efficiently.</CardDescription>
+          <CardTitle className="text-3xl font-headline text-primary">Welcome to FileFlow Dashboard!</CardTitle>
+          <CardDescription className="text-lg">
+            Your central hub for managing files, users, and system settings.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-            {/* Removed name filter Input as it's now part of DataTable */}
-            <div>
-              <label htmlFor="type-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by type</label>
-              <Select
-                value={typeFilter}
-                onValueChange={(value) => setTypeFilter(value as FileType | 'all')}
-              >
-                <SelectTrigger className="h-10" id="type-filter">
-                  <SelectValue placeholder="Select file type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {Object.values(FileType).map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-             <label htmlFor="date-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by date</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date-filter"
-                    variant={"outline"}
-                    className="w-full justify-start text-left font-normal h-10"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFilter ? format(dateFilter, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateFilter}
-                    onSelect={setDateFilter}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-             <div className="flex items-center gap-2 md:col-start-2 lg:col-start-3 justify-self-start md:justify-self-end"> {/* Adjusted for alignment */}
-                <Button variant="outline" size="sm" onClick={() => { setTypeFilter('all'); setDateFilter(undefined); /* Clear DataTable filter if needed via table instance */}}>
-                  <ListFilter className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">Clear Type/Date Filters</span><span className="sm:hidden">Clear Filters</span>
-                </Button>
-             </div>
-          </div>
-           <div className="flex flex-wrap justify-end items-center gap-2 mb-6">
-             <Button size="sm">
-                <UploadCloud className="mr-2 h-4 w-4" /> Upload File
-            </Button>
-            <Button variant="secondary" size="sm">
-                <FolderPlus className="mr-2 h-4 w-4" /> Create Folder
-            </Button>
+          <p className="mb-6 text-muted-foreground">
+            Navigate through different modules using the sidebar. Here's a quick overview of what you can do:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <InfoCard
+              icon={<FolderKanban className="h-8 w-8 text-accent" />}
+              title="File Management"
+              description="Organize, upload, and share your documents and media."
+              link="/file-manager"
+              imageSrc="https://placehold.co/600x400.png"
+              imageAlt="File management illustration"
+              aiHint="file organization"
+            />
+            <InfoCard
+              icon={<Users className="h-8 w-8 text-accent" />}
+              title="User & Role Management"
+              description="Administer users, assign roles, and manage department structures."
+              link="/user-management/users"
+              imageSrc="https://placehold.co/600x400.png"
+              imageAlt="User management illustration"
+              aiHint="team collaboration"
+            />
+            <InfoCard
+              icon={<BarChart className="h-8 w-8 text-accent" />}
+              title="Template Management"
+              description="Create and manage master templates for documents and approvals."
+              link="/template-management/master-templates"
+              imageSrc="https://placehold.co/600x400.png"
+              imageAlt="Analytics illustration"
+              aiHint="document templates"
+            />
           </div>
         </CardContent>
       </Card>
-      
-      <DataTable 
-        columns={columns} 
-        data={filteredFiles} 
-        filterColumnId="name"
-        filterPlaceholder="Search by name..."
-      />
+
+      <Card>
+        <CardHeader>
+            <CardTitle className="text-xl font-headline">Quick Stats</CardTitle>
+            <CardDescription>A snapshot of your current activity.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatItem label="Total Files" value="1.2K" />
+            <StatItem label="Active Users" value="78" />
+            <StatItem label="Pending Approvals" value="12" />
+            <StatItem label="Storage Used" value="64 GB" />
+        </CardContent>
+      </Card>
+
     </div>
   );
+}
+
+interface InfoCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  link: string;
+  imageSrc: string;
+  imageAlt: string;
+  aiHint?: string;
+}
+
+function InfoCard({ icon, title, description, link, imageSrc, imageAlt, aiHint }: InfoCardProps) {
+  return (
+    <Card className="hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="flex flex-row items-center gap-4 pb-2">
+        {icon}
+        <CardTitle className="text-xl">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Image 
+          src={imageSrc} 
+          alt={imageAlt} 
+          width={600} 
+          height={400} 
+          className="rounded-md mb-4 object-cover aspect-[3/2]" 
+          data-ai-hint={aiHint || title.toLowerCase().replace(/\s+/g, ' ')}
+        />
+        <p className="text-sm text-muted-foreground mb-4">{description}</p>
+        <a href={link} className="text-sm font-semibold text-primary hover:underline">
+          Go to {title} &rarr;
+        </a>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface StatItemProps {
+    label: string;
+    value: string;
+}
+
+function StatItem({ label, value }: StatItemProps) {
+    return (
+        <div className="p-4 bg-secondary/50 rounded-lg text-center">
+            <p className="text-2xl font-bold text-primary">{value}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
+        </div>
+    );
 }

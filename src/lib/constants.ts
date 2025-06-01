@@ -1,6 +1,9 @@
-import type { FileItem} from '@/types';
-import { FileType } from '@/types';
-import { FileText, ImageIcon, Video, Folder as FolderIcon, Music, FileArchive, FileSpreadsheet, Presentation, FileJson, FileCode, FileQuestion } from 'lucide-react';
+import type { FileItem, UserItem, RoleItem, DepartmentItem } from '@/types';
+import { FileType, DepartmentStatus } from '@/types';
+import { 
+  FileText, ImageIcon, Video, Folder as FolderIcon, Music, FileArchive, 
+  FileSpreadsheet, Presentation, FileJson, FileCode, FileQuestion
+} from 'lucide-react';
 
 export const MOCK_FILES: FileItem[] = [
   {
@@ -159,10 +162,39 @@ export const getFileIcon = (type: FileType) => {
     case FileType.PRESENTATION:
         return Presentation;
     case FileType.PDF:
-        return FileText; // Often similar to document or specific PDF icon
+        return FileText; 
     case FileType.CODE:
-        return FileCode; // Or FileJson / specific code icons
+        return FileCode; 
     default:
       return FileQuestion;
   }
 };
+
+export const MOCK_USERS: UserItem[] = Array.from({ length: 25 }, (_, i) => ({
+  id: `user-${i + 1}`,
+  srNo: i + 1,
+  firstName: `UserFirst${i + 1}`,
+  lastName: `UserLast${i + 1}`,
+  email: `user${i + 1}@example.com`,
+  isActive: Math.random() > 0.3, // Roughly 70% active
+}));
+
+export const MOCK_ROLES: RoleItem[] = [
+  { id: 'role-1', srNo: 1, role: 'Administrator', description: 'Full access to all system features.', isActive: true },
+  { id: 'role-2', srNo: 2, role: 'Editor', description: 'Can create and modify content.', isActive: true },
+  { id: 'role-3', srNo: 3, role: 'Viewer', description: 'Can only view content.', isActive: true },
+  { id: 'role-4', srNo: 4, role: 'Contributor', description: 'Can submit content for review.', isActive: false },
+  { id: 'role-5', srNo: 5, role: 'Moderator', description: 'Manages user-generated content.', isActive: true },
+];
+
+export const MOCK_DEPARTMENTS: DepartmentItem[] = Array.from({ length: 15 }, (_, i) => {
+  const statuses = Object.values(DepartmentStatus);
+  return {
+    id: `dept-${i + 1}`,
+    srNo: i + 1,
+    name: `Department ${String.fromCharCode(65 + i)}`, // A, B, C...
+    description: `This is department ${String.fromCharCode(65 + i)}. It handles various important tasks related to its specialized area of operations.`,
+    isActive: Math.random() > 0.2, // Roughly 80% active
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+  };
+});

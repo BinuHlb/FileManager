@@ -26,3 +26,36 @@ export interface FileItem {
   sharedWith?: string[]; // List of user IDs or emails
   owner?: string;
 }
+
+// User Management Types
+export interface UserItem {
+  id: string;
+  srNo: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+}
+
+export interface RoleItem {
+  id: string;
+  srNo: number;
+  role: string;
+  description: string;
+  isActive: boolean;
+}
+
+export enum DepartmentStatus {
+  ACTIVE = "Active",
+  INACTIVE = "Inactive",
+  ARCHIVED = "Archived",
+}
+
+export interface DepartmentItem {
+  id: string;
+  srNo: number;
+  name: string;
+  description: string;
+  isActive: boolean;
+  status: DepartmentStatus;
+}

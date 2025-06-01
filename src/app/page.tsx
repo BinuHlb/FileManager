@@ -1,14 +1,14 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_FILES } from '@/lib/constants';
 import { columns } from '@/components/file-table/columns';
-import { DataTable } from '@/components/file-table/data-table';
+import { DataTable } from '@/components/shared/data-table'; // Updated import path
 import type { FileItem } from '@/types';
 import { FileType } from '@/types';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,32 +17,26 @@ import { format, isValid, parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function FileManagementPage() {
-  const [allFiles, setAllFiles] = useState<FileItem[]>(MOCK_FILES); // This could come from an API
-  const [nameFilter, setNameFilter] = useState('');
+  const [allFiles, setAllFiles] = useState<FileItem[]>([]);
   const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
 
-  // Effect to simulate loading files (e.g., from an API)
   useEffect(() => {
-    // In a real app, you would fetch data here
-    // For now, MOCK_FILES are used directly
     setAllFiles(MOCK_FILES.map(file => ({
       ...file,
-      // Ensure lastModified is a Date object
       lastModified: typeof file.lastModified === 'string' ? parseISO(file.lastModified) : file.lastModified
     })));
   }, []);
 
-
   const filteredFiles = useMemo(() => {
     return allFiles.filter(file => {
-      const nameMatch = nameFilter === '' || file.name.toLowerCase().includes(nameFilter.toLowerCase());
+      // Name filter is now handled by DataTable's internal filter
       const typeMatch = typeFilter === 'all' || file.type === typeFilter;
       const dateMatch = !dateFilter || 
         (isValid(file.lastModified) && format(file.lastModified, 'yyyy-MM-dd') === format(dateFilter, 'yyyy-MM-dd'));
-      return nameMatch && typeMatch && dateMatch;
+      return typeMatch && dateMatch;
     });
-  }, [allFiles, nameFilter, typeFilter, dateFilter]);
+  }, [allFiles, typeFilter, dateFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,17 +46,8 @@ export default function FileManagementPage() {
           <CardDescription>Browse, search, and manage your files efficiently.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6 items-end">
-            <div className="md:col-span-2 lg:col-span-2">
-              <label htmlFor="name-filter" className="block text-sm font-medium text-muted-foreground mb-1">Search by name</label>
-              <Input
-                id="name-filter"
-                placeholder="Enter file name..."
-                value={nameFilter}
-                onChange={(e) => setNameFilter(e.target.value)}
-                className="h-10"
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+            {/* Removed name filter Input as it's now part of DataTable */}
             <div>
               <label htmlFor="type-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by type</label>
               <Select
@@ -103,11 +88,13 @@ export default function FileManagementPage() {
                 </PopoverContent>
               </Popover>
             </div>
+             <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => { setTypeFilter('all'); setDateFilter(undefined); /* Clear DataTable filter if needed via table instance */}}>
+                  <ListFilter className="mr-2 h-4 w-4" /> Clear Type/Date Filters
+                </Button>
+             </div>
           </div>
            <div className="flex items-center gap-2 mb-6">
-            <Button variant="outline" size="sm" onClick={() => { setNameFilter(''); setTypeFilter('all'); setDateFilter(undefined);}}>
-              <ListFilter className="mr-2 h-4 w-4" /> Clear Filters
-            </Button>
              <Button size="sm" className="ml-auto">
                 <UploadCloud className="mr-2 h-4 w-4" /> Upload File
             </Button>
@@ -118,7 +105,12 @@ export default function FileManagementPage() {
         </CardContent>
       </Card>
       
-      <DataTable columns={columns} data={filteredFiles} />
+      <DataTable 
+        columns={columns} 
+        data={filteredFiles} 
+        filterColumnId="name"
+        filterPlaceholder="Search by name..."
+      />
     </div>
   );
 }

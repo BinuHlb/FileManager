@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -13,13 +14,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FileFlowLogo } from "@/components/icons";
 import {
   LayoutDashboard,
   Folder,
-  Users,
+  Users, // Existing Users icon
   Clock,
   Trash2,
   ChevronRight,
@@ -30,7 +29,11 @@ import {
   LogOut,
   HardDrive,
   Cloud,
-  Star
+  Star,
+  UsersRound, // For User Management parent
+  User,       // For Users child item
+  ShieldCheck,// For Roles child item
+  Building    // For Departments child item
 } from "lucide-react";
 
 interface NavItem {
@@ -44,7 +47,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   {
-    href: "/my-files",
+    href: "/my-files", // Main link for "My Files" can be the first submenu item or a dedicated page
     icon: Folder,
     label: "My Files",
     submenu: [
@@ -53,9 +56,19 @@ const navItems: NavItem[] = [
       { href: "/my-files/videos", icon: Video, label: "Videos" },
     ],
   },
-  { href: "/shared", icon: Users, label: "Shared with Me" },
+  { href: "/shared", icon: Users, label: "Shared with Me" }, // Existing Users icon, might conflict if not careful
   { href: "/recent", icon: Clock, label: "Recent" },
   { href: "/favorites", icon: Star, label: "Favorites"},
+  {
+    href: "/user-management", // Main link for "User Management"
+    icon: UsersRound, // New icon for User Management
+    label: "User Management",
+    submenu: [
+      { href: "/user-management/users", icon: User, label: "Users" },
+      { href: "/user-management/roles", icon: ShieldCheck, label: "Roles" },
+      { href: "/user-management/departments", icon: Building, label: "Departments" },
+    ],
+  },
   {
     href: "/storage",
     icon: HardDrive,
@@ -90,19 +103,34 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
 
 const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const { state: sidebarState, isMobile } = useSidebar();
+  const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const handleMouseEnter = () => {
-    if (sidebarState === "expanded" && !isMobile) {
+    if (sidebarState === "expanded" && !isMobile && item.submenu) {
       setIsPopoverOpen(true);
     }
   };
 
   const handleMouseLeave = () => {
-    if (sidebarState === "expanded" && !isMobile) {
+    if (sidebarState === "expanded" && !isMobile && item.submenu) {
       setIsPopoverOpen(false);
     }
   };
+  
+  const handleItemClick = () => {
+    if (isMobile) {
+      // If it's a main item with submenu, toggle popover, otherwise close sidebar for navigation
+      if (item.submenu) {
+         setIsPopoverOpen(o => !o);
+      } else {
+        setOpenMobile(false);
+      }
+    } else if (sidebarState === "collapsed" && item.submenu) {
+        setIsPopoverOpen(o => !o);
+    }
+    // If it's a main item without submenu and sidebar is expanded, or a submenu item, allow direct navigation.
+  };
+
 
   if (item.submenu) {
     return (
@@ -113,28 +141,35 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               asChild={sidebarState === "collapsed" || isMobile}
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
-              onClick={() => { if (isMobile || sidebarState === "collapsed") setIsPopoverOpen(o => !o) }}
+              onClick={handleItemClick}
+              // For expandable items on mobile/collapsed, a direct link might not be desired
+              // Link to the item.href only if it's meant to be a navigable parent
             >
               {sidebarState === "collapsed" || isMobile ? (
-                <Link href={item.href} className="flex items-center w-full h-full">
+                // For collapsed/mobile, the trigger itself can be a link to the parent page or just a toggle
+                <Link href={item.href} className="flex items-center w-full h-full" onClick={(e) => { if (isMobile) e.preventDefault(); handleItemClick(); }}>
                    <NavMenuItemContent item={item} />
                 </Link>
               ) : (
-                 <div className="flex items-center w-full h-full cursor-pointer">
+                 <div className="flex items-center w-full h-full cursor-pointer" onClick={handleItemClick}>
                     <NavMenuItemContent item={item} />
                  </div>
               )}
             </SidebarMenuButton>
           </div>
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" className="ml-2 p-1 w-48" 
-                        onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
-                        hidden={sidebarState === "collapsed" && !isMobile} // Hide popover content when sidebar is collapsed on desktop
+        <PopoverContent 
+            side="right" 
+            align="start" 
+            className="ml-2 p-1 w-48" 
+            onMouseEnter={handleMouseEnter} 
+            onMouseLeave={handleMouseLeave}
+            hidden={sidebarState === "collapsed" && !isMobile && !isPopoverOpen}
         >
           <SidebarMenu>
             {item.submenu.map((subItem) => (
               <SidebarMenuItem key={subItem.href}>
-                <SidebarMenuButton asChild className="w-full justify-start h-8 text-sm" variant="ghost">
+                <SidebarMenuButton asChild className="w-full justify-start h-8 text-sm" variant="ghost" onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}>
                   <Link href={subItem.href}>
                     <NavMenuItemContent item={subItem} isSubmenuItem={true}/>
                   </Link>
@@ -147,11 +182,13 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
     );
   }
 
+  // Non-submenu item
   return (
     <SidebarMenuButton
       asChild
       className="w-full justify-start"
       tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
+      onClick={handleItemClick}
     >
       <Link href={item.href}>
         <NavMenuItemContent item={item} />

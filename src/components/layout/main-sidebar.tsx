@@ -131,7 +131,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
             <SidebarMenuButton
               asChild={true} 
               className="w-full justify-start"
-              tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
+              tooltip={{ children: item.label, side: 'right', hidden: (sidebarState === "expanded" || isMobile) || !!item.submenu }}
             >
                <Link 
                   href={item.href} 

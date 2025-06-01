@@ -24,7 +24,7 @@ import {
   ShieldCheck,// For Roles child item
   Building    // For Departments child item
 } from "lucide-react";
-import { cn } from "@/lib/utils"; // Import cn utility
+import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
@@ -37,7 +37,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/", icon: Folder, label: "File Manager" },
   {
-    href: "/user-management/users", // Parent link for User Management, directs to the first child
+    href: "/user-management/users", 
     icon: UsersRound, 
     label: "User Management",
     submenu: [
@@ -48,7 +48,7 @@ const navItems: NavItem[] = [
   },
 ];
 
-const bottomNavItems: NavItem[] = []; // All bottom items removed as they are unrouted
+const bottomNavItems: NavItem[] = []; 
 
 const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> = ({ item, isSubmenuItem = false }) => {
   const { state: sidebarState } = useSidebar();
@@ -56,10 +56,10 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
 
   return (
     <>
-      <Icon className={isSubmenuItem ? "mr-2 h-4 w-4" : ""} />
+      <Icon className={cn(isSubmenuItem ? "mr-2 h-4 w-4" : "", sidebarState === "collapsed" ? "h-5 w-5" : "")} />
       <span className={cn(
         isSubmenuItem ? "text-sm" : "",
-        "group-data-[collapsible=icon]:hidden" // Hide label when sidebar is icon-only
+        "group-data-[collapsible=icon]:hidden" 
       )}>{item.label}</span>
       {!isSubmenuItem && item.submenu && sidebarState === "expanded" && (
         <ChevronRight className="ml-auto h-4 w-4" />
@@ -73,20 +73,19 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const handleMouseEnter = () => {
-    if (sidebarState === "expanded" && !isMobile && item.submenu) {
+    if ((sidebarState === "expanded" || sidebarState === "collapsed") && !isMobile && item.submenu) {
       setIsPopoverOpen(true);
     }
   };
 
   const handleMouseLeave = () => {
-    if (sidebarState === "expanded" && !isMobile && item.submenu) {
+    if ((sidebarState === "expanded" || sidebarState === "collapsed") && !isMobile && item.submenu) {
       setIsPopoverOpen(false);
     }
   };
   
   const handleItemClick = () => {
     if (isMobile) {
-      // If it's a main item with submenu, toggle popover, otherwise close sidebar for navigation
       if (item.submenu) {
          setIsPopoverOpen(o => !o);
       } else {
@@ -95,7 +94,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
     } else if (sidebarState === "collapsed" && item.submenu) {
         setIsPopoverOpen(o => !o);
     }
-    // If it's a main item without submenu and sidebar is expanded, or a submenu item, allow direct navigation.
+    // For expanded sidebar, click on parent with submenu is handled by hover for popover visibility
   };
 
 
@@ -111,7 +110,17 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               onClick={handleItemClick}
             >
               {sidebarState === "collapsed" || isMobile ? (
-                <Link href={item.href} className="flex items-center w-full h-full" onClick={(e) => { if (isMobile && item.submenu) e.preventDefault(); handleItemClick(); }}>
+                <Link 
+                  href={item.href} 
+                  className="flex items-center w-full h-full" 
+                  onClick={(e) => { 
+                    const shouldPreventNav = (sidebarState === "collapsed" && !isMobile && item.submenu) || (isMobile && item.submenu);
+                    if (shouldPreventNav) {
+                      e.preventDefault();
+                    }
+                    handleItemClick(); 
+                  }}
+                >
                    <NavMenuItemContent item={item} />
                 </Link>
               ) : (
@@ -128,7 +137,6 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
             className="ml-2 p-1 w-48" 
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
-            hidden={sidebarState === "collapsed" && !isMobile && !isPopoverOpen}
         >
           <SidebarMenu>
             {item.submenu.map((subItem) => (
@@ -146,7 +154,6 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
     );
   }
 
-  // Non-submenu item
   return (
     <SidebarMenuButton
       asChild
@@ -163,13 +170,13 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
 
 
 export function MainSidebar() {
-  const { setOpenMobile } = useSidebar();
+  const { state: sidebarState, setOpenMobile } = useSidebar();
   return (
     <>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpenMobile(false)}>
           <FileFlowLogo className="h-8 w-8" />
-          <span className="font-semibold text-xl font-headline group-data-[collapsible=icon]:hidden">FileFlow</span>
+          <span className={cn("font-semibold text-xl font-headline", sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')}>FileFlow</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="flex-1 overflow-y-auto p-2">
@@ -190,12 +197,12 @@ export function MainSidebar() {
                 </SidebarMenuItem>
             ))}
         </SidebarMenu>
-        <div className="flex items-center gap-3 p-2 mt-2 rounded-lg bg-sidebar-accent/50">
+        <div className={cn("flex items-center gap-3 p-2 mt-2 rounded-lg bg-sidebar-accent/50", sidebarState === 'collapsed' ? 'justify-center' : '')}>
           <Avatar className="h-10 w-10 border-2 border-primary">
             <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="user avatar"/>
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
-          <div className="group-data-[collapsible=icon]:hidden">
+          <div className={cn(sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')}>
             <p className="font-semibold text-sm text-sidebar-accent-foreground">John Doe</p>
             <p className="text-xs text-muted-foreground">john.doe@example.com</p>
           </div>

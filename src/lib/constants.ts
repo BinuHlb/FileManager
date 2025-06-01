@@ -1,5 +1,6 @@
-import type { FileItem, UserItem, RoleItem, DepartmentItem } from '@/types';
-import { FileType, DepartmentStatus } from '@/types';
+
+import type { FileItem, UserItem, RoleItem, DepartmentItem, MasterTemplateItem, DocumentListItem, ApprovalListItem } from '@/types';
+import { FileType, DepartmentStatus, TemplateStatus, DocumentStatus, ApprovalStatus } from '@/types';
 import { 
   FileText, ImageIcon, Video, Folder as FolderIcon, Music, FileArchive, 
   FileSpreadsheet, Presentation, FileJson, FileCode, FileQuestion
@@ -198,3 +199,42 @@ export const MOCK_DEPARTMENTS: DepartmentItem[] = Array.from({ length: 15 }, (_,
     status: statuses[Math.floor(Math.random() * statuses.length)],
   };
 });
+
+export const MOCK_MASTER_TEMPLATES: MasterTemplateItem[] = Array.from({ length: 10 }, (_, i) => {
+  const statuses = Object.values(TemplateStatus);
+  return {
+    id: `mt-${i + 1}`,
+    srNo: i + 1,
+    name: `Master Template ${i + 1}`,
+    description: `This is the official master template for type ${String.fromCharCode(65 + i)} documents. Version ${i%3 + 1}.0.`,
+    version: `${i%3 + 1}.0`,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    lastModified: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)), // Random date in last 30 days
+  };
+});
+
+export const MOCK_DOCUMENT_LIST_ITEMS: DocumentListItem[] = Array.from({ length: 18 }, (_, i) => {
+  const statuses = Object.values(DocumentStatus);
+  return {
+    id: `doc-${i + 1}`,
+    srNo: i + 1,
+    name: `Document ${i + 1} (From Template ${MOCK_MASTER_TEMPLATES[i % MOCK_MASTER_TEMPLATES.length].name})`,
+    templateUsed: MOCK_MASTER_TEMPLATES[i % MOCK_MASTER_TEMPLATES.length].name,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    createdBy: MOCK_USERS[i % MOCK_USERS.length].email,
+    lastModified: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 60)), // Random date in last 60 days
+  };
+});
+
+export const MOCK_APPROVAL_LIST_ITEMS: ApprovalListItem[] = MOCK_DOCUMENT_LIST_ITEMS
+  .filter(doc => doc.status === DocumentStatus.PENDING_APPROVAL || Math.random() < 0.3) // Take all pending and some others
+  .map((doc, i) => ({
+    id: `appr-${i + 1}`,
+    srNo: i + 1,
+    documentName: doc.name,
+    submittedBy: doc.createdBy,
+    submissionDate: new Date(doc.lastModified.getTime() - Math.floor(Math.random() * 1000 * 60 * 60 * 24)), // Submitted day before last modified
+    status: doc.status === DocumentStatus.PENDING_APPROVAL ? ApprovalStatus.PENDING : (Math.random() > 0.4 ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED),
+    approver: doc.status !== DocumentStatus.PENDING_APPROVAL ? MOCK_USERS[(i + 5) % MOCK_USERS.length].email : undefined,
+  }));
+

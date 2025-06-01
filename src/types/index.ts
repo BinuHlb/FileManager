@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export enum FileType {
@@ -58,4 +59,54 @@ export interface DepartmentItem {
   description: string;
   isActive: boolean;
   status: DepartmentStatus;
+}
+
+// Template Management Types
+export enum TemplateStatus {
+  DRAFT = "Draft",
+  PUBLISHED = "Published",
+  ARCHIVED = "Archived",
+}
+
+export interface MasterTemplateItem {
+  id: string;
+  srNo: number;
+  name: string;
+  description: string;
+  version: string;
+  status: TemplateStatus;
+  lastModified: Date;
+}
+
+export enum DocumentStatus {
+  DRAFT = "Draft",
+  PENDING_APPROVAL = "Pending Approval",
+  APPROVED = "Approved",
+  REJECTED = "Rejected",
+}
+
+export interface DocumentListItem {
+  id: string;
+  srNo: number;
+  name: string;
+  templateUsed: string; // Name of the master template
+  status: DocumentStatus;
+  createdBy: string;
+  lastModified: Date;
+}
+
+export enum ApprovalStatus {
+  PENDING = "Pending",
+  APPROVED = "Approved",
+  REJECTED = "Rejected",
+}
+
+export interface ApprovalListItem {
+  id: string;
+  srNo: number;
+  documentName: string;
+  submittedBy: string;
+  submissionDate: Date;
+  status: ApprovalStatus;
+  approver?: string; // Optional: who approved/rejected
 }

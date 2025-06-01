@@ -24,7 +24,11 @@ import {
   User,       
   ShieldCheck,
   Building,
-  LogOut
+  LogOut,
+  LayoutGrid,
+  FileText,
+  Files,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/auth-context';
@@ -49,6 +53,16 @@ const navItems: NavItem[] = [
       { href: "/user-management/departments", icon: Building, label: "Departments" },
     ],
   },
+  {
+    href: "/template-management/master-templates",
+    icon: LayoutGrid,
+    label: "Template Management",
+    submenu: [
+      { href: "/template-management/master-templates", icon: FileText, label: "Master Templates"},
+      { href: "/template-management/documents", icon: Files, label: "List of Documents"},
+      { href: "/template-management/approval-list", icon: CheckCircle2, label: "Approval List"},
+    ]
+  }
 ];
 
 const bottomNavItems: NavItem[] = []; 
@@ -64,7 +78,7 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
         isSubmenuItem ? "text-sm" : "",
         (!isSubmenuItem && !isMobile && sidebarState === "collapsed") ? "hidden" : ""
       )}>{item.label}</span>
-      {!isSubmenuItem && item.submenu && sidebarState === "expanded" && !isMobile && (
+      {!isSubmenuItem && item.submenu && !isMobile && sidebarState === "expanded" && (
         <ChevronRight className="ml-auto h-4 w-4" />
       )}
     </>
@@ -76,7 +90,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const handleMouseEnter = () => {
-    if (!isMobile && item.submenu) { // Open popover on hover for desktop (collapsed or expanded)
+    if (!isMobile && item.submenu) { 
       setIsPopoverOpen(true);
     }
   };
@@ -117,8 +131,6 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
             >
-              {/* For collapsed desktop or mobile, Link handles click to toggle popover/navigate */}
-              {/* For expanded desktop, Link handles direct navigation if parent is clicked */}
                <Link 
                   href={item.href} 
                   className="flex items-center w-full h-full" 
@@ -237,4 +249,3 @@ export function MainSidebar() {
     </>
   );
 }
-

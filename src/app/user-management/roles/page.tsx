@@ -45,6 +45,7 @@ type RoleFormData = z.infer<typeof roleFormSchema>;
 export default function RolesPage() {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   const form = useForm<RoleFormData>({
     resolver: zodResolver(roleFormSchema),
@@ -56,7 +57,12 @@ export default function RolesPage() {
   });
 
   useEffect(() => {
-    setRoles(MOCK_ROLES);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setRoles(MOCK_ROLES);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: RoleFormData) {
@@ -157,6 +163,7 @@ export default function RolesPage() {
         data={roles} 
         filterColumnId="role"
         filterPlaceholder="Search by role name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

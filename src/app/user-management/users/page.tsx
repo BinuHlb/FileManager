@@ -45,6 +45,7 @@ type UserFormData = z.infer<typeof userFormSchema>;
 export default function UsersPage() {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -57,7 +58,12 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
-    setUsers(MOCK_USERS);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setUsers(MOCK_USERS);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: UserFormData) {
@@ -176,6 +182,7 @@ export default function UsersPage() {
         data={users} 
         filterColumnId="firstName" 
         filterPlaceholder="Search by first name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

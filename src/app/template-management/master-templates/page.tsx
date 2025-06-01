@@ -53,6 +53,7 @@ type MasterTemplateFormData = z.infer<typeof masterTemplateFormSchema>;
 export default function MasterTemplatesPage() {
   const [templates, setTemplates] = useState<MasterTemplateItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   const form = useForm<MasterTemplateFormData>({
     resolver: zodResolver(masterTemplateFormSchema),
@@ -65,7 +66,12 @@ export default function MasterTemplatesPage() {
   });
 
   useEffect(() => {
-    setTemplates(MOCK_MASTER_TEMPLATES);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setTemplates(MOCK_MASTER_TEMPLATES);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: MasterTemplateFormData) {
@@ -192,6 +198,7 @@ export default function MasterTemplatesPage() {
         data={templates} 
         filterColumnId="name"
         filterPlaceholder="Search by template name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

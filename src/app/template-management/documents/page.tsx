@@ -51,6 +51,7 @@ type DocumentFormData = z.infer<typeof documentFormSchema>;
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DocumentListItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   const form = useForm<DocumentFormData>({
     resolver: zodResolver(documentFormSchema),
@@ -62,7 +63,12 @@ export default function DocumentsPage() {
   });
 
   useEffect(() => {
-    setDocuments(MOCK_DOCUMENT_LIST_ITEMS);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setDocuments(MOCK_DOCUMENT_LIST_ITEMS);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: DocumentFormData) {
@@ -175,6 +181,7 @@ export default function DocumentsPage() {
         data={documents} 
         filterColumnId="name"
         filterPlaceholder="Search by document name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

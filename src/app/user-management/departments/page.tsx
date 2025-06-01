@@ -54,6 +54,7 @@ type DepartmentFormData = z.infer<typeof departmentFormSchema>;
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [isAddDeptModalOpen, setIsAddDeptModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   const form = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentFormSchema),
@@ -66,7 +67,12 @@ export default function DepartmentsPage() {
   });
 
   useEffect(() => {
-    setDepartments(MOCK_DEPARTMENTS);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setDepartments(MOCK_DEPARTMENTS);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: DepartmentFormData) {
@@ -191,6 +197,7 @@ export default function DepartmentsPage() {
         data={departments} 
         filterColumnId="name"
         filterPlaceholder="Search by department name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

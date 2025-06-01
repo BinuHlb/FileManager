@@ -20,12 +20,18 @@ export default function FileManagerPage() {
   const [allFiles, setAllFiles] = useState<FileItem[]>([]);
   const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   useEffect(() => {
-    setAllFiles(MOCK_FILES.map(file => ({
-      ...file,
-      lastModified: typeof file.lastModified === 'string' ? parseISO(file.lastModified) : file.lastModified
-    })));
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setAllFiles(MOCK_FILES.map(file => ({
+        ...file,
+        lastModified: typeof file.lastModified === 'string' ? parseISO(file.lastModified) : file.lastModified
+      })));
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   const filteredFiles = useMemo(() => {
@@ -108,6 +114,7 @@ export default function FileManagerPage() {
         data={filteredFiles} 
         filterColumnId="name"
         filterPlaceholder="Search by name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

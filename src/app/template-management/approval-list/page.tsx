@@ -10,9 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function ApprovalListPage() {
   const [approvalItems, setApprovalItems] = useState<ApprovalListItem[]>([]);
+  const [isTableLoading, setIsTableLoading] = useState(true);
 
   useEffect(() => {
-    setApprovalItems(MOCK_APPROVAL_LIST_ITEMS);
+    setIsTableLoading(true);
+    const timer = setTimeout(() => {
+      setApprovalItems(MOCK_APPROVAL_LIST_ITEMS);
+      setIsTableLoading(false);
+    }, 1500); // Simulate 1.5 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -37,6 +43,7 @@ export default function ApprovalListPage() {
         data={approvalItems} 
         filterColumnId="documentName"
         filterPlaceholder="Search by document name..."
+        isLoading={isTableLoading}
       />
     </div>
   );

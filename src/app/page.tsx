@@ -38,7 +38,7 @@ export default function DashboardPage() {
               title="File Management"
               description="Organize, upload, and share your documents and media."
               link="/file-manager"
-              imageSrc="/a1.jpg" 
+              imageSrc="/a1.svg" 
               imageAlt="File management illustration"
               aiHint="file organization"
             />

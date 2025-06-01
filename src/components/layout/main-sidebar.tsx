@@ -15,16 +15,19 @@ import {
 } from "@/components/ui/sidebar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button"; // Import Button for Logout
 import { FileFlowLogo } from "@/components/icons";
 import {
   Folder,
   ChevronRight,
-  UsersRound, // For User Management parent
-  User,       // For Users child item
-  ShieldCheck,// For Roles child item
-  Building    // For Departments child item
+  UsersRound, 
+  User,       
+  ShieldCheck,
+  Building,
+  LogOut // Import LogOut icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/context/auth-context'; // Import useAuth
 
 interface NavItem {
   href: string;
@@ -84,7 +87,13 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
     }
   };
   
-  const handleItemClick = () => {
+  const handleItemClick = (e: React.MouseEvent<HTMLElement>) => { // Accept MouseEvent
+    const shouldPreventNav = (sidebarState === "collapsed" && !isMobile && item.submenu) || (isMobile && item.submenu);
+    
+    if (shouldPreventNav) {
+      e.preventDefault(); // Prevent navigation if it's a parent item in collapsed/mobile and has submenu
+    }
+
     if (isMobile) {
       if (item.submenu) {
          setIsPopoverOpen(o => !o);
@@ -104,27 +113,21 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
         <PopoverTrigger asChild>
           <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="w-full">
             <SidebarMenuButton
-              asChild={sidebarState === "collapsed" || isMobile}
+              asChild={!(sidebarState === "expanded" && !isMobile)} // True if collapsed or mobile
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
-              onClick={handleItemClick}
+              onClick={handleItemClick} // Pass event here
             >
               {sidebarState === "collapsed" || isMobile ? (
                 <Link 
                   href={item.href} 
                   className="flex items-center w-full h-full" 
-                  onClick={(e) => { 
-                    const shouldPreventNav = (sidebarState === "collapsed" && !isMobile && item.submenu) || (isMobile && item.submenu);
-                    if (shouldPreventNav) {
-                      e.preventDefault();
-                    }
-                    handleItemClick(); 
-                  }}
+                  onClick={(e) => handleItemClick(e)} // Pass event to Link's onClick as well
                 >
                    <NavMenuItemContent item={item} />
                 </Link>
               ) : (
-                 <div className="flex items-center w-full h-full cursor-pointer" onClick={handleItemClick}>
+                 <div className="flex items-center w-full h-full cursor-pointer" onClick={(e) => handleItemClick(e)}>
                     <NavMenuItemContent item={item} />
                  </div>
               )}
@@ -159,7 +162,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
       asChild
       className="w-full justify-start"
       tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
-      onClick={handleItemClick}
+      onClick={(e) => handleItemClick(e)}
     >
       <Link href={item.href}>
         <NavMenuItemContent item={item} />
@@ -171,6 +174,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
 
 export function MainSidebar() {
   const { state: sidebarState, setOpenMobile } = useSidebar();
+  const { logout } = useAuth();
   return (
     <>
       <SidebarHeader className="p-4">
@@ -207,6 +211,17 @@ export function MainSidebar() {
             <p className="text-xs text-muted-foreground">john.doe@example.com</p>
           </div>
         </div>
+        <Button 
+          variant="ghost" 
+          className={cn(
+            "w-full justify-start mt-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            sidebarState === 'collapsed' ? 'justify-center' : ''
+          )}
+          onClick={logout}
+        >
+          <LogOut className={cn("h-5 w-5", sidebarState === 'expanded' ? "mr-2" : "")} />
+          <span className={cn(sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')}>Logout</span>
+        </Button>
       </SidebarFooter>
     </>
   );

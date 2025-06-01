@@ -11,5 +11,6 @@ export const quicksand = Quicksand({
   subsets: ['latin'],
   variable: '--font-quicksand',
   display: 'swap',
-  weight: ['400', '500', '600', '700'], // Corrected from 'weights' to 'weight'
+  weight: ['400', '500', '600', '700'],
 });
+

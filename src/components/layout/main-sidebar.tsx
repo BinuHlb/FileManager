@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button"; // Import Button for Logout
+import { Button } from "@/components/ui/button";
 import { FileFlowLogo } from "@/components/icons";
 import {
   Folder,
@@ -24,10 +24,10 @@ import {
   User,       
   ShieldCheck,
   Building,
-  LogOut // Import LogOut icon
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from '@/context/auth-context'; // Import useAuth
+import { useAuth } from '@/context/auth-context';
 
 interface NavItem {
   href: string;
@@ -54,17 +54,17 @@ const navItems: NavItem[] = [
 const bottomNavItems: NavItem[] = []; 
 
 const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> = ({ item, isSubmenuItem = false }) => {
-  const { state: sidebarState } = useSidebar(); // Removed isMobile from here as it's not used directly for class applying logic here
+  const { state: sidebarState, isMobile } = useSidebar();
   const Icon = item.icon;
 
   return (
     <>
-      <Icon className={cn(isSubmenuItem ? "mr-2 h-4 w-4" : "", sidebarState === "collapsed" ? "h-5 w-5" : "h-5 w-5")} /> {/* Ensured icon size consistency */}
+      <Icon className={cn(isSubmenuItem ? "mr-2 h-4 w-4" : "h-5 w-5")} />
       <span className={cn(
         isSubmenuItem ? "text-sm" : "",
-        "group-data-[collapsible=icon]:hidden" 
+        isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
       )}>{item.label}</span>
-      {!isSubmenuItem && item.submenu && sidebarState === "expanded" && (
+      {!isSubmenuItem && item.submenu && sidebarState === "expanded" && !isMobile && (
         <ChevronRight className="ml-auto h-4 w-4" />
       )}
     </>
@@ -89,24 +89,21 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   
   const handleItemClick = (e: React.MouseEvent<HTMLElement>) => { 
     const isParentWithSubmenuInCollapsedDesktop = sidebarState === "collapsed" && !isMobile && item.submenu;
-    const isParentWithSubmenuInMobile = isMobile && item.submenu;
 
     if (isParentWithSubmenuInCollapsedDesktop) {
-      e.preventDefault(); // Prevent navigation for parent item in collapsed desktop
-      setIsPopoverOpen(o => !o); // Toggle popover instead
+      e.preventDefault(); 
+      setIsPopoverOpen(o => !o); 
       return;
     }
     
     if (isMobile) {
       if (item.submenu) {
-         e.preventDefault(); // Prevent navigation for parent item on mobile if it has submenu
+         e.preventDefault(); 
          setIsPopoverOpen(o => !o);
       } else {
-        setOpenMobile(false); // Close mobile sheet on navigation to a non-submenu item
+        setOpenMobile(false); 
       }
     }
-    // For expanded sidebar, click on parent with submenu is handled by hover for popover visibility, navigation is allowed.
-    // For items without submenus, navigation is always allowed.
   };
 
 
@@ -116,15 +113,11 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
         <PopoverTrigger asChild>
           <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="w-full">
             <SidebarMenuButton
-              asChild={true} // Always true to allow Link or div inside
+              asChild={true} 
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
-              // Remove direct onClick from SidebarMenuButton, handle it on Link/div
             >
-              {/* Conditional rendering for Link vs div based on context for better event handling */}
               {(sidebarState === "collapsed" && !isMobile) || isMobile ? (
-                // In collapsed desktop or mobile, this acts as a trigger for popover/submenu logic.
-                // Link is used for href but its click is managed.
                 <Link 
                   href={item.href} 
                   className="flex items-center w-full h-full" 
@@ -133,8 +126,6 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
                    <NavMenuItemContent item={item} />
                 </Link>
               ) : (
-                 // In expanded desktop, this is just a div that looks like a button. Click does nothing here (navigation default for Link)
-                 // For expanded desktop, Link wraps the whole PopoverTrigger implicitly by asChild on parent
                  <Link href={item.href} className="flex items-center w-full h-full" onClick={handleItemClick}>
                     <NavMenuItemContent item={item} />
                  </Link>
@@ -170,7 +161,7 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
       asChild
       className="w-full justify-start"
       tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
-      onClick={ isMobile ? () => setOpenMobile(false) : undefined} // Close mobile sidebar on direct item click
+      onClick={ isMobile ? () => setOpenMobile(false) : undefined}
     >
       <Link href={item.href}>
         <NavMenuItemContent item={item} />
@@ -190,7 +181,7 @@ export function MainSidebar() {
           <FileFlowLogo className="h-8 w-8" />
           <span className={cn(
             "font-semibold text-xl font-headline",
-             isMobile ? "" : (sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')
+            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
           )}>FileFlow</span>
         </Link>
       </SidebarHeader>
@@ -221,7 +212,7 @@ export function MainSidebar() {
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           <div className={cn(
-            isMobile ? "" : (sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')
+            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
           )}>
             <p className="font-semibold text-sm text-sidebar-accent-foreground">John Doe</p>
             <p className="text-xs text-muted-foreground">john.doe@example.com</p>
@@ -243,10 +234,11 @@ export function MainSidebar() {
               isMobile ? "mr-2" : (sidebarState === 'expanded' ? "mr-2" : "")
           )} />
           <span className={cn(
-            isMobile ? "" : (sidebarState === 'collapsed' ? 'hidden' : 'group-data-[collapsible=icon]:hidden')
+            isMobile ? "" : (sidebarState === "collapsed" ? "hidden" : "")
           )}>Logout</span>
         </Button>
       </SidebarFooter>
     </>
   );
 }
+

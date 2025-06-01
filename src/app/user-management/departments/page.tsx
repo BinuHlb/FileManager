@@ -9,7 +9,7 @@ import type { DepartmentItem } from '@/types';
 import { DepartmentStatus } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, ListFilter } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,6 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Label } from '@/components/ui/label';
 
 const departmentFormSchema = z.object({
   name: z.string().min(1, { message: "Department name is required." }),
@@ -73,15 +72,12 @@ export default function DepartmentsPage() {
     const timer = setTimeout(() => {
       setAllDepartments(MOCK_DEPARTMENTS);
       setIsTableLoading(false);
-    }, 1500); // Simulate 1.5 second delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: DepartmentFormData) {
     console.log("New Department Data:", data);
-    // Add to mock list or call API
-    // const newDept: DepartmentItem = { id: `dept-${Date.now()}`, srNo: departments.length + 1, ...data };
-    // setAllDepartments(prev => [...prev, newDept]);
     form.reset();
     setIsAddDeptModalOpen(false);
   }
@@ -92,6 +88,11 @@ export default function DepartmentsPage() {
     }
     return allDepartments.filter(dept => dept.status === statusFilter);
   }, [allDepartments, statusFilter]);
+  
+  const statusFilterOptions = [
+    { value: 'all', label: 'All Statuses' },
+    ...Object.values(DepartmentStatus).map(status => ({ value: status, label: status }))
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -197,27 +198,7 @@ export default function DepartmentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
-            <div>
-              <Label htmlFor="status-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by status</Label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as DepartmentStatus | 'all')}>
-                <SelectTrigger id="status-filter" className="h-10">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {Object.values(DepartmentStatus).map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center md:justify-self-end">
-              <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
-                <ListFilter className="mr-2 h-4 w-4" /> Clear Status Filter
-              </Button>
-            </div>
-          </div>
+         {/* Filters are now inside DataTable */}
         </CardContent>
       </Card>
       
@@ -227,6 +208,15 @@ export default function DepartmentsPage() {
         filterColumnId="name"
         filterPlaceholder="Search by department name..."
         isLoading={isTableLoading}
+        externalSelectFilter={{
+          value: statusFilter,
+          onChange: (value) => setStatusFilter(value as DepartmentStatus | 'all'),
+          options: statusFilterOptions,
+          placeholder: "Filter by status...",
+          label: "Status:",
+          onClear: () => setStatusFilter('all'),
+          clearButtonLabel: "Clear Status"
+        }}
       />
     </div>
   );

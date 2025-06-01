@@ -8,7 +8,7 @@ import { DataTable } from '@/components/shared/data-table';
 import type { UserItem } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserPlus, ListFilter } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,8 +32,6 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required." }),
@@ -65,20 +63,17 @@ export default function UsersPage() {
     const timer = setTimeout(() => {
       setAllUsers(MOCK_USERS);
       setIsTableLoading(false);
-    }, 1500); // Simulate 1.5 second delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: UserFormData) {
     console.log("New User Data:", data);
-    // Here you would typically call an API to save the user
-    // For now, we'll just log it and simulate adding to the mock list (optional)
     const newUser: UserItem = {
       id: `user-${Date.now()}`,
       srNo: allUsers.length + 1,
       ...data,
     };
-    // setAllUsers(prevUsers => [...prevUsers, newUser]); // Uncomment to add to table visually
     form.reset();
     setIsAddUserModalOpen(false);
   }
@@ -90,6 +85,12 @@ export default function UsersPage() {
     const isActiveFilter = activityFilter === 'active';
     return allUsers.filter(user => user.isActive === isActiveFilter);
   }, [allUsers, activityFilter]);
+
+  const activityFilterOptions = [
+    { value: 'all', label: 'All Users' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' }
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -184,26 +185,7 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
-            <div>
-              <Label htmlFor="activity-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by activity</Label>
-              <Select value={activityFilter} onValueChange={(value) => setActivityFilter(value as 'all' | 'active' | 'inactive')}>
-                <SelectTrigger id="activity-filter" className="h-10">
-                  <SelectValue placeholder="Select activity status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Users</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center md:justify-self-end">
-              <Button variant="outline" size="sm" onClick={() => setActivityFilter('all')}>
-                <ListFilter className="mr-2 h-4 w-4" /> Clear Activity Filter
-              </Button>
-            </div>
-          </div>
+         {/* Filters are now inside DataTable */}
         </CardContent>
       </Card>
       
@@ -213,6 +195,15 @@ export default function UsersPage() {
         filterColumnId="firstName" 
         filterPlaceholder="Search by first name..."
         isLoading={isTableLoading}
+        externalSelectFilter={{
+          value: activityFilter,
+          onChange: (value) => setActivityFilter(value as 'all' | 'active' | 'inactive'),
+          options: activityFilterOptions,
+          placeholder: "Filter by activity...",
+          label: "Activity:",
+          onClear: () => setActivityFilter('all'),
+          clearButtonLabel: "Clear Activity"
+        }}
       />
     </div>
   );

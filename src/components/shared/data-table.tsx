@@ -26,14 +26,33 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, RotateCcw, type LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+interface ExternalSelectFilterProps {
+  value: string | 'all';
+  onChange: (value: string | 'all') => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder: string;
+  label?: string;
+  onClear?: () => void;
+  clearButtonLabel?: string;
+  clearButtonIcon?: LucideIcon;
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -41,6 +60,7 @@ interface DataTableProps<TData, TValue> {
   filterColumnId?: string;
   filterPlaceholder?: string;
   isLoading?: boolean;
+  externalSelectFilter?: ExternalSelectFilterProps;
 }
 
 export function DataTable<TData, TValue>({
@@ -49,11 +69,13 @@ export function DataTable<TData, TValue>({
   filterColumnId,
   filterPlaceholder,
   isLoading = false,
+  externalSelectFilter,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  const selectFilterId = React.useId();
 
   const table = useReactTable({
     data,
@@ -81,23 +103,61 @@ export function DataTable<TData, TValue>({
   });
 
   const skeletonRowCount = table.getState().pagination.pageSize;
+  const ClearIcon = externalSelectFilter?.clearButtonIcon || RotateCcw;
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center justify-between">
-        {filterColumnId && filterPlaceholder && (
-          <Input
-            placeholder={filterPlaceholder}
-            value={(table.getColumn(filterColumnId)?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn(filterColumnId)?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm h-10"
-          />
-        )}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
+          {filterColumnId && filterPlaceholder && (
+            <Input
+              placeholder={filterPlaceholder}
+              value={(table.getColumn(filterColumnId)?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn(filterColumnId)?.setFilterValue(event.target.value)
+              }
+              className="h-10 max-w-xs"
+            />
+          )}
+          {externalSelectFilter && (
+            <div className="flex items-center gap-2">
+              {externalSelectFilter.label && (
+                <Label htmlFor={selectFilterId} className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                  {externalSelectFilter.label}
+                </Label>
+              )}
+              <Select
+                value={externalSelectFilter.value}
+                onValueChange={externalSelectFilter.onChange}
+              >
+                <SelectTrigger id={selectFilterId} className="h-10 min-w-[180px] w-auto sm:w-auto">
+                  <SelectValue placeholder={externalSelectFilter.placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {externalSelectFilter.options.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {externalSelectFilter.onClear && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-3"
+                  onClick={externalSelectFilter.onClear}
+                  aria-label={externalSelectFilter.clearButtonLabel || "Clear filter"}
+                >
+                  <ClearIcon className="h-4 w-4" />
+                   <span className="ml-2 hidden sm:inline">{externalSelectFilter.clearButtonLabel || "Clear"}</span>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto h-10">
+            <Button variant="outline" className="h-10">
               Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -115,7 +175,6 @@ export function DataTable<TData, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {/* Attempt to humanize column id */}
                     {column.id.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                   </DropdownMenuCheckboxItem>
                 );

@@ -8,7 +8,7 @@ import { DataTable } from '@/components/shared/data-table';
 import type { RoleItem } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldPlus, ListFilter } from 'lucide-react';
+import { ShieldPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,8 +33,6 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const roleFormSchema = z.object({
   role: z.string().min(1, { message: "Role name is required." }),
@@ -64,15 +62,12 @@ export default function RolesPage() {
     const timer = setTimeout(() => {
       setAllRoles(MOCK_ROLES);
       setIsTableLoading(false);
-    }, 1500); // Simulate 1.5 second delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: RoleFormData) {
     console.log("New Role Data:", data);
-    // Add to mock list or call API
-    // const newRole: RoleItem = { id: `role-${Date.now()}`, srNo: roles.length + 1, ...data };
-    // setAllRoles(prev => [...prev, newRole]);
     form.reset();
     setIsAddRoleModalOpen(false);
   }
@@ -84,6 +79,12 @@ export default function RolesPage() {
     const isActiveFilter = activityFilter === 'active';
     return allRoles.filter(role => role.isActive === isActiveFilter);
   }, [allRoles, activityFilter]);
+
+  const activityFilterOptions = [
+    { value: 'all', label: 'All Roles' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' }
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -165,26 +166,7 @@ export default function RolesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
-            <div>
-              <Label htmlFor="activity-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by activity</Label>
-              <Select value={activityFilter} onValueChange={(value) => setActivityFilter(value as 'all' | 'active' | 'inactive')}>
-                <SelectTrigger id="activity-filter" className="h-10">
-                  <SelectValue placeholder="Select activity status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center md:justify-self-end">
-              <Button variant="outline" size="sm" onClick={() => setActivityFilter('all')}>
-                <ListFilter className="mr-2 h-4 w-4" /> Clear Activity Filter
-              </Button>
-            </div>
-          </div>
+         {/* Filters are now inside DataTable */}
         </CardContent>
       </Card>
       
@@ -194,6 +176,15 @@ export default function RolesPage() {
         filterColumnId="role"
         filterPlaceholder="Search by role name..."
         isLoading={isTableLoading}
+        externalSelectFilter={{
+          value: activityFilter,
+          onChange: (value) => setActivityFilter(value as 'all' | 'active' | 'inactive'),
+          options: activityFilterOptions,
+          placeholder: "Filter by activity...",
+          label: "Activity:",
+          onClear: () => setActivityFilter('all'),
+          clearButtonLabel: "Clear Activity"
+        }}
       />
     </div>
   );

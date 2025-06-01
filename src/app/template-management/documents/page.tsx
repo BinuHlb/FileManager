@@ -7,9 +7,9 @@ import { documentListColumns } from '@/components/document-list-table/columns';
 import { DataTable } from '@/components/shared/data-table';
 import type { DocumentListItem } from '@/types';
 import { DocumentStatus } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, ListFilter } from 'lucide-react';
+import { FilePlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -39,11 +39,10 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Label } from '@/components/ui/label';
 
 const documentFormSchema = z.object({
   name: z.string().min(1, { message: "Document name is required." }),
-  templateUsed: z.string().min(1, { message: "Template used is required." }), // Simple text for now
+  templateUsed: z.string().min(1, { message: "Template used is required." }),
   status: z.nativeEnum(DocumentStatus).default(DocumentStatus.DRAFT),
 });
 
@@ -69,21 +68,12 @@ export default function DocumentsPage() {
     const timer = setTimeout(() => {
       setAllDocuments(MOCK_DOCUMENT_LIST_ITEMS);
       setIsTableLoading(false);
-    }, 1500); // Simulate 1.5 second delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   function onSubmit(data: DocumentFormData) {
     console.log("New Document Data:", data);
-    // Add to mock list or call API
-    // const newDoc: DocumentListItem = {
-    //   id: `doc-${Date.now()}`,
-    //   srNo: documents.length + 1,
-    //   ...data,
-    //   createdBy: "current.user@example.com", // Placeholder
-    //   lastModified: new Date(),
-    // };
-    // setAllDocuments(prev => [...prev, newDoc]);
     form.reset();
     setIsAddModalOpen(false);
   }
@@ -94,6 +84,11 @@ export default function DocumentsPage() {
     }
     return allDocuments.filter(doc => doc.status === statusFilter);
   }, [allDocuments, statusFilter]);
+
+  const statusFilterOptions = [
+    { value: 'all', label: 'All Statuses' },
+    ...Object.values(DocumentStatus).map(status => ({ value: status, label: status }))
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -139,7 +134,6 @@ export default function DocumentsPage() {
                         <FormItem>
                           <FormLabel>Template Used</FormLabel>
                           <FormControl>
-                            {/* Replace with Select fetching Master Templates in a real app */}
                             <Input placeholder="Master Contract Template v1.2" {...field} />
                           </FormControl>
                           <FormMessage />
@@ -159,7 +153,6 @@ export default function DocumentsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {/* Typically only Draft or Pending Approval for new docs */}
                               <SelectItem value={DocumentStatus.DRAFT}>{DocumentStatus.DRAFT}</SelectItem>
                               <SelectItem value={DocumentStatus.PENDING_APPROVAL}>{DocumentStatus.PENDING_APPROVAL}</SelectItem>
                             </SelectContent>
@@ -181,27 +174,7 @@ export default function DocumentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
-            <div>
-              <Label htmlFor="status-filter" className="block text-sm font-medium text-muted-foreground mb-1">Filter by status</Label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as DocumentStatus | 'all')}>
-                <SelectTrigger id="status-filter" className="h-10">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {Object.values(DocumentStatus).map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center md:justify-self-end">
-              <Button variant="outline" size="sm" onClick={() => setStatusFilter('all')}>
-                <ListFilter className="mr-2 h-4 w-4" /> Clear Status Filter
-              </Button>
-            </div>
-          </div>
+          {/* Filters are now inside DataTable */}
         </CardContent>
       </Card>
       
@@ -211,6 +184,15 @@ export default function DocumentsPage() {
         filterColumnId="name"
         filterPlaceholder="Search by document name..."
         isLoading={isTableLoading}
+        externalSelectFilter={{
+          value: statusFilter,
+          onChange: (value) => setStatusFilter(value as DocumentStatus | 'all'),
+          options: statusFilterOptions,
+          placeholder: "Filter by status...",
+          label: "Status:",
+          onClear: () => setStatusFilter('all'),
+          clearButtonLabel: "Clear Status"
+        }}
       />
     </div>
   );

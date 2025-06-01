@@ -9,6 +9,18 @@ import Image from 'next/image';
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
+       <Card>
+        <CardHeader>
+            <CardTitle className="text-xl font-headline">Quick Stats</CardTitle>
+            <CardDescription>A snapshot of your current activity.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatItem label="Total Files" value="1.2K" />
+            <StatItem label="Active Users" value="78" />
+            <StatItem label="Pending Approvals" value="12" />
+            <StatItem label="Storage Used" value="64 GB" />
+        </CardContent>
+      </Card>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl font-headline text-primary">Welcome to FileFlow Dashboard!</CardTitle>
@@ -52,18 +64,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-            <CardTitle className="text-xl font-headline">Quick Stats</CardTitle>
-            <CardDescription>A snapshot of your current activity.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatItem label="Total Files" value="1.2K" />
-            <StatItem label="Active Users" value="78" />
-            <StatItem label="Pending Approvals" value="12" />
-            <StatItem label="Storage Used" value="64 GB" />
-        </CardContent>
-      </Card>
+     
 
     </div>
   );

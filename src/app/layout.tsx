@@ -52,7 +52,7 @@ export default function RootLayout({
         <meta name="description" content="File Management Application by Firebase Studio" />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <SiteLayout>{children}</SiteLayout>
             <Toaster />

@@ -94,7 +94,7 @@ export default function DashboardPage() {
             ))}
         </CardContent>
       </Card>
-      <Card className="shadow-lg">
+      <Card>
         <CardHeader>
           <CardTitle className="text-3xl font-headline text-primary">Welcome to FileFlow Dashboard!</CardTitle>
           <CardDescription className="text-lg">
@@ -197,7 +197,7 @@ function StatItem({ label, value, isLoading, colorIndex }: StatItemProps) {
 
     return (
         <div className={cn(
-            "p-4 rounded-lg text-center h-24 flex flex-col justify-center shadow-md transition-colors duration-300",
+            "p-4 rounded-lg text-center h-24 flex flex-col justify-center transition-colors duration-300",
             isLoading ? "bg-secondary/30" : selectedColor.bg
         )}>
             {isLoading ? (

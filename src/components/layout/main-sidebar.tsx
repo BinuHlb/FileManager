@@ -29,7 +29,7 @@ import {
   FileText,
   Files,
   CheckCircle2,
-  LayoutDashboard // Added for Dashboard
+  LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/auth-context';
@@ -146,15 +146,19 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
         <PopoverContent 
             side="right" 
             align="start" 
-            className="ml-2 p-1 w-48" 
+            className="ml-2 p-1 w-48 bg-primary text-primary-foreground shadow-lg rounded-md"
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
         >
           <SidebarMenu>
             {item.submenu.map((subItem) => (
               <SidebarMenuItem key={subItem.href}>
-                <SidebarMenuButton asChild className="w-full justify-start h-8 text-sm" variant="ghost" onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}>
-                  <Link href={subItem.href}>
+                <SidebarMenuButton 
+                  asChild 
+                  className="w-full justify-start h-8 text-sm text-primary-foreground hover:bg-primary-foreground/10 px-2 py-1.5 rounded-sm" 
+                  onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}
+                >
+                  <Link href={subItem.href} className="flex items-center gap-2">
                     <NavMenuItemContent item={subItem} isSubmenuItem={true}/>
                   </Link>
                 </SidebarMenuButton>

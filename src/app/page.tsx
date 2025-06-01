@@ -88,14 +88,14 @@ export default function FileManagementPage() {
                 </PopoverContent>
               </Popover>
             </div>
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2 md:col-start-2 lg:col-start-3 justify-self-start md:justify-self-end"> {/* Adjusted for alignment */}
                 <Button variant="outline" size="sm" onClick={() => { setTypeFilter('all'); setDateFilter(undefined); /* Clear DataTable filter if needed via table instance */}}>
-                  <ListFilter className="mr-2 h-4 w-4" /> Clear Type/Date Filters
+                  <ListFilter className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">Clear Type/Date Filters</span><span className="sm:hidden">Clear Filters</span>
                 </Button>
              </div>
           </div>
-           <div className="flex items-center gap-2 mb-6">
-             <Button size="sm" className="ml-auto">
+           <div className="flex flex-wrap justify-end items-center gap-2 mb-6">
+             <Button size="sm">
                 <UploadCloud className="mr-2 h-4 w-4" /> Upload File
             </Button>
             <Button variant="secondary" size="sm">

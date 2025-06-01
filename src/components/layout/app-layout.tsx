@@ -2,14 +2,12 @@
 "use client";
 
 import type React from "react";
+import { useState } from 'react'; // Import useState
 import {
   SidebarProvider,
   Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarInset,
   SidebarTrigger,
+  SidebarInset,
 } from "@/components/ui/sidebar";
 import { MainSidebar } from "./main-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -17,8 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const [sidebarOpenState, setSidebarOpenState] = useState(false); // Default to false (collapsed)
+
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider 
+      open={sidebarOpenState} 
+      onOpenChange={setSidebarOpenState}
+    >
       <Sidebar collapsible="icon">
         <MainSidebar />
       </Sidebar>

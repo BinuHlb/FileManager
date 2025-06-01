@@ -24,6 +24,7 @@ import {
   ShieldCheck,// For Roles child item
   Building    // For Departments child item
 } from "lucide-react";
+import { cn } from "@/lib/utils"; // Import cn utility
 
 interface NavItem {
   href: string;
@@ -56,7 +57,10 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
   return (
     <>
       <Icon className={isSubmenuItem ? "mr-2 h-4 w-4" : ""} />
-      <span className={isSubmenuItem ? "text-sm" : ""}>{item.label}</span>
+      <span className={cn(
+        isSubmenuItem ? "text-sm" : "",
+        "group-data-[collapsible=icon]:hidden" // Hide label when sidebar is icon-only
+      )}>{item.label}</span>
       {!isSubmenuItem && item.submenu && sidebarState === "expanded" && (
         <ChevronRight className="ml-auto h-4 w-4" />
       )}
@@ -165,7 +169,7 @@ export function MainSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpenMobile(false)}>
           <FileFlowLogo className="h-8 w-8" />
-          <span className="font-semibold text-xl font-headline">FileFlow</span>
+          <span className="font-semibold text-xl font-headline group-data-[collapsible=icon]:hidden">FileFlow</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="flex-1 overflow-y-auto p-2">

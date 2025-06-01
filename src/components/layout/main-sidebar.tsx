@@ -96,11 +96,9 @@ const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, path
   if (item.href === "/") {
       isMainActive = pathname === "/";
   } else if (item.submenu) {
-      // A parent item is active if its own href matches, or if any of its submenu items' href matches the current path.
-      // Since parent href usually points to first child, this covers both. More broadly, if path starts with any subitem path.
       isMainActive = pathname === item.href || item.submenu.some(subItem => pathname.startsWith(subItem.href));
   } else {
-      isMainActive = pathname === item.href;
+      isMainActive = pathname === item.href || pathname.startsWith(item.href + "/");
   }
 
 
@@ -145,9 +143,15 @@ const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, path
               asChild={true} 
               className={cn(
                 "w-full justify-start",
-                isMainActive && "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90"
+                isMainActive && [
+                  "bg-primary",
+                  "text-primary-foreground",
+                  "hover:bg-accent",
+                  "hover:text-accent-foreground",
+                  "focus:bg-accent",
+                  "focus:text-accent-foreground",
+                ]
               )}
-              // isActive={isMainActive} // Semantic prop, styling is handled by className
               tooltip={{ children: item.label, side: 'right', hidden: (sidebarState === "expanded" || isMobile) || !!item.submenu }}
             >
                <Link 
@@ -176,9 +180,8 @@ const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, path
                     asChild 
                     className={cn(
                       "w-full justify-start h-8 text-sm bg-transparent text-primary-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground px-2 py-1.5 rounded-sm",
-                      isSubActive && "bg-accent text-accent-foreground" // Active style for sub-item
+                      isSubActive && "bg-accent text-accent-foreground"
                     )}
-                    // isActive={isSubActive} // Semantic prop
                     onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}
                   >
                     <Link href={subItem.href} className="flex items-center gap-2">
@@ -199,9 +202,15 @@ const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, path
       asChild
       className={cn(
         "w-full justify-start",
-        isMainActive && "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90"
+        isMainActive && [
+          "bg-primary",
+          "text-primary-foreground",
+          "hover:bg-accent",
+          "hover:text-accent-foreground",
+          "focus:bg-accent",
+          "focus:text-accent-foreground",
+        ]
       )}
-      // isActive={isMainActive} // Semantic prop
       tooltip={{ children: item.label, side: 'right', hidden: (sidebarState === "expanded" || isMobile) || !!item.submenu }}
       onClick={ isMobile ? () => setOpenMobile(false) : undefined}
     >
@@ -216,7 +225,7 @@ const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, path
 export function MainSidebar() {
   const { state: sidebarState, setOpenMobile, isMobile } = useSidebar();
   const { logout } = useAuth();
-  const pathname = usePathname(); // Get current pathname
+  const pathname = usePathname(); 
 
   return (
     <>
@@ -285,4 +294,3 @@ export function MainSidebar() {
     </>
   );
 }
-

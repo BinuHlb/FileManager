@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { MOCK_FILES } from '@/lib/constants';
 import { columns } from '@/components/file-table/columns';
 import { DataTable } from '@/components/shared/data-table';
@@ -21,6 +21,7 @@ export default function FileManagerPage() {
   const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [isTableLoading, setIsTableLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsTableLoading(true);
@@ -42,6 +43,23 @@ export default function FileManagerPage() {
       return typeMatch && dateMatch;
     });
   }, [allFiles, typeFilter, dateFilter]);
+
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      console.log("Selected files:", files);
+      // Here you would typically handle the file upload process
+      // For example, by calling an upload service or Genkit flow.
+      // Reset the input value to allow selecting the same file again if needed
+      if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,7 +117,14 @@ export default function FileManagerPage() {
              </div>
           </div>
            <div className="flex flex-wrap justify-end items-center gap-2 mb-6">
-             <Button size="sm">
+             <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                multiple 
+              />
+             <Button size="sm" onClick={handleUploadButtonClick}>
                 <UploadCloud className="mr-2 h-4 w-4" /> Upload File
             </Button>
             <Button variant="secondary" size="sm">

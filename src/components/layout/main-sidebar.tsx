@@ -17,20 +17,8 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FileFlowLogo } from "@/components/icons";
 import {
-  LayoutDashboard,
   Folder,
-  Users, // Existing Users icon
-  Clock,
-  Trash2,
   ChevronRight,
-  FileText,
-  Image as ImageIcon,
-  Video,
-  Settings,
-  LogOut,
-  HardDrive,
-  Cloud,
-  Star,
   UsersRound, // For User Management parent
   User,       // For Users child item
   ShieldCheck,// For Roles child item
@@ -46,23 +34,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/", icon: Folder, label: "File Manager" },
   {
-    href: "/my-files", // Main link for "My Files" can be the first submenu item or a dedicated page
-    icon: Folder,
-    label: "My Files",
-    submenu: [
-      { href: "/my-files/documents", icon: FileText, label: "Documents" },
-      { href: "/my-files/images", icon: ImageIcon, label: "Images" },
-      { href: "/my-files/videos", icon: Video, label: "Videos" },
-    ],
-  },
-  { href: "/shared", icon: Users, label: "Shared with Me" }, // Existing Users icon, might conflict if not careful
-  { href: "/recent", icon: Clock, label: "Recent" },
-  { href: "/favorites", icon: Star, label: "Favorites"},
-  {
-    href: "/user-management", // Main link for "User Management"
-    icon: UsersRound, // New icon for User Management
+    href: "/user-management/users", // Parent link for User Management, directs to the first child
+    icon: UsersRound, 
     label: "User Management",
     submenu: [
       { href: "/user-management/users", icon: User, label: "Users" },
@@ -70,22 +45,9 @@ const navItems: NavItem[] = [
       { href: "/user-management/departments", icon: Building, label: "Departments" },
     ],
   },
-  {
-    href: "/storage",
-    icon: HardDrive,
-    label: "Storage",
-    submenu: [
-        { href: "/storage/local", icon: HardDrive, label: "Local Disk" },
-        { href: "/storage/cloud", icon: Cloud, label: "Cloud Sync" },
-    ]
-  },
-  { href: "/trash", icon: Trash2, label: "Trash" },
 ];
 
-const bottomNavItems: NavItem[] = [
-    { href: "/settings", icon: Settings, label: "Settings", isBottom: true },
-    { href: "/logout", icon: LogOut, label: "Logout", isBottom: true },
-]
+const bottomNavItems: NavItem[] = []; // All bottom items removed as they are unrouted
 
 const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> = ({ item, isSubmenuItem = false }) => {
   const { state: sidebarState } = useSidebar();
@@ -143,12 +105,9 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
               className="w-full justify-start"
               tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
               onClick={handleItemClick}
-              // For expandable items on mobile/collapsed, a direct link might not be desired
-              // Link to the item.href only if it's meant to be a navigable parent
             >
               {sidebarState === "collapsed" || isMobile ? (
-                // For collapsed/mobile, the trigger itself can be a link to the parent page or just a toggle
-                <Link href={item.href} className="flex items-center w-full h-full" onClick={(e) => { if (isMobile) e.preventDefault(); handleItemClick(); }}>
+                <Link href={item.href} className="flex items-center w-full h-full" onClick={(e) => { if (isMobile && item.submenu) e.preventDefault(); handleItemClick(); }}>
                    <NavMenuItemContent item={item} />
                 </Link>
               ) : (
@@ -212,7 +171,7 @@ export function MainSidebar() {
       <SidebarContent className="flex-1 overflow-y-auto p-2">
         <SidebarMenu>
           {navItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
+            <SidebarMenuItem key={item.href + (item.submenu ? '-parent' : '')}>
               <NavMenuItem item={item} />
             </SidebarMenuItem>
           ))}

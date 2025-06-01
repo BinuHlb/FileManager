@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { getFileIcon } from "@/lib/constants";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
+import React, { useState, useEffect } from 'react';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -119,8 +120,21 @@ export const columns: ColumnDef<FileItem>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const date = row.original.lastModified;
-      return <div>{format(new Date(date), "PPpp")}</div>;
+      const dateValue = row.original.lastModified;
+      const [displayDate, setDisplayDate] = useState<string>("Loading date...");
+
+      useEffect(() => {
+        // Ensure dateValue can be converted to a Date object
+        const dateObj = dateValue instanceof Date ? dateValue : new Date(dateValue);
+        
+        if (isValid(dateObj)) {
+          setDisplayDate(format(dateObj, "PPpp"));
+        } else {
+          setDisplayDate("Invalid Date");
+        }
+      }, [dateValue]);
+
+      return <div>{displayDate}</div>;
     },
   },
   {

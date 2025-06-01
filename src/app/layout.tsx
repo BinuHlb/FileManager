@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { usePathname } from 'next/navigation';
 import React, { useState } from 'react'; // Import React for JSX
-import { inter } from './fonts'; // Import the configured Inter font
+import { inter, quicksand } from './fonts'; // Import the configured Inter and Quicksand fonts
 
 // SiteLayout component to conditionally render AppLayout
 function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${quicksand.variable}`} suppressHydrationWarning>
       <head>
         <title>FileFlow</title>
         <meta name="description" content="File Management Application by Firebase Studio" />

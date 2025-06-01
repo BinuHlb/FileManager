@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation'; // Import usePathname
 import {
   SidebarHeader,
   SidebarContent,
@@ -87,9 +88,21 @@ const NavMenuItemContent: React.FC<{ item: NavItem, isSubmenuItem?: boolean }> =
   );
 };
 
-const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
+const NavMenuItem: React.FC<{ item: NavItem; pathname: string }> = ({ item, pathname }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
+
+  let isMainActive: boolean;
+  if (item.href === "/") {
+      isMainActive = pathname === "/";
+  } else if (item.submenu) {
+      // A parent item is active if its own href matches, or if any of its submenu items' href matches the current path.
+      // Since parent href usually points to first child, this covers both. More broadly, if path starts with any subitem path.
+      isMainActive = pathname === item.href || item.submenu.some(subItem => pathname.startsWith(subItem.href));
+  } else {
+      isMainActive = pathname === item.href;
+  }
+
 
   const handleMouseEnter = () => {
     if (!isMobile && item.submenu) { 
@@ -130,7 +143,11 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
           <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="w-full">
             <SidebarMenuButton
               asChild={true} 
-              className="w-full justify-start"
+              className={cn(
+                "w-full justify-start",
+                isMainActive && "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90"
+              )}
+              // isActive={isMainActive} // Semantic prop, styling is handled by className
               tooltip={{ children: item.label, side: 'right', hidden: (sidebarState === "expanded" || isMobile) || !!item.submenu }}
             >
                <Link 
@@ -151,19 +168,26 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
             onMouseLeave={handleMouseLeave}
         >
           <SidebarMenu>
-            {item.submenu.map((subItem) => (
-              <SidebarMenuItem key={subItem.href}>
-                <SidebarMenuButton 
-                  asChild 
-                  className="w-full justify-start h-8 text-sm bg-transparent text-primary-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground px-2 py-1.5 rounded-sm" 
-                  onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}
-                >
-                  <Link href={subItem.href} className="flex items-center gap-2">
-                    <NavMenuItemContent item={subItem} isSubmenuItem={true}/>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {item.submenu.map((subItem) => {
+              const isSubActive = subItem.href === pathname;
+              return (
+                <SidebarMenuItem key={subItem.href}>
+                  <SidebarMenuButton 
+                    asChild 
+                    className={cn(
+                      "w-full justify-start h-8 text-sm bg-transparent text-primary-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground px-2 py-1.5 rounded-sm",
+                      isSubActive && "bg-accent text-accent-foreground" // Active style for sub-item
+                    )}
+                    // isActive={isSubActive} // Semantic prop
+                    onClick={() => { setIsPopoverOpen(false); if(isMobile) setOpenMobile(false);}}
+                  >
+                    <Link href={subItem.href} className="flex items-center gap-2">
+                      <NavMenuItemContent item={subItem} isSubmenuItem={true}/>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </PopoverContent>
       </Popover>
@@ -173,8 +197,12 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
   return (
     <SidebarMenuButton
       asChild
-      className="w-full justify-start"
-      tooltip={{ children: item.label, side: 'right', hidden: sidebarState === "expanded" || isMobile }}
+      className={cn(
+        "w-full justify-start",
+        isMainActive && "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary/90"
+      )}
+      // isActive={isMainActive} // Semantic prop
+      tooltip={{ children: item.label, side: 'right', hidden: (sidebarState === "expanded" || isMobile) || !!item.submenu }}
       onClick={ isMobile ? () => setOpenMobile(false) : undefined}
     >
       <Link href={item.href}>
@@ -188,6 +216,8 @@ const NavMenuItem: React.FC<{ item: NavItem }> = ({ item }) => {
 export function MainSidebar() {
   const { state: sidebarState, setOpenMobile, isMobile } = useSidebar();
   const { logout } = useAuth();
+  const pathname = usePathname(); // Get current pathname
+
   return (
     <>
       <SidebarHeader className="p-4">
@@ -203,7 +233,7 @@ export function MainSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href + (item.submenu ? '-parent' : '')}>
-              <NavMenuItem item={item} />
+              <NavMenuItem item={item} pathname={pathname} />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -213,7 +243,7 @@ export function MainSidebar() {
          <SidebarMenu>
             {bottomNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                <NavMenuItem item={item} />
+                <NavMenuItem item={item} pathname={pathname} />
                 </SidebarMenuItem>
             ))}
         </SidebarMenu>

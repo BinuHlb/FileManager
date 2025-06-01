@@ -38,7 +38,7 @@ export default function DashboardPage() {
               title="File Management"
               description="Organize, upload, and share your documents and media."
               link="/file-manager"
-              imageSrc="/a1.jpg"
+              imageSrc="/images/a1.jpg"
               imageAlt="File management illustration"
               aiHint="file organization"
             />
@@ -47,7 +47,7 @@ export default function DashboardPage() {
               title="User & Role Management"
               description="Administer users, assign roles, and manage department structures."
               link="/user-management/users"
-              imageSrc="/a2.jpg"
+              imageSrc="/images/a2.jpg"
               imageAlt="User management illustration"
               aiHint="team collaboration"
             />
@@ -56,7 +56,7 @@ export default function DashboardPage() {
               title="Template Management"
               description="Create and manage master templates for documents and approvals."
               link="/template-management/master-templates"
-              imageSrc="/a3.jpg"
+              imageSrc="/images/a3.jpg"
               imageAlt="Analytics illustration"
               aiHint="document templates"
             />
@@ -118,3 +118,4 @@ function StatItem({ label, value }: StatItemProps) {
         </div>
     );
 }
+
